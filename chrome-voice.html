@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نموذج بالإدخال الصوتي المحلي</title>
+<style>
+  :root { --ink:#1d2433; --muted:#6b7385; --line:#d9dde6; --accent:#0f6b5c; --bad:#b3261e; --warn:#a15c00; --bg:#f6f7f9; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif; background:var(--bg); color:var(--ink); }
+  main { max-width:640px; margin:40px auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:28px; }
+  h1 { font-size:1.35rem; margin:0 0 6px; }
+  .sub { color:var(--muted); margin:0 0 20px; font-size:.92rem; }
+  .status { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:12px 14px; border-radius:8px; background:#eef6f4; margin-bottom:20px; font-size:.9rem; }
+  .status.bad { background:#fbeceb; color:var(--bad); }
+  .status.warn { background:#fdf3e4; color:var(--warn); }
+  .status button { margin-inline-start:auto; }
+  label { display:block; font-weight:600; margin:16px 0 6px; }
+  .row { display:flex; gap:8px; align-items:flex-start; }
+  input[type=text], textarea, select { width:100%; font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:8px; }
+  textarea { min-height:130px; resize:vertical; }
+  button { font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line); background:#fff; padding:9px 14px; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .mic { flex:0 0 44px; height:44px; padding:0; font-size:1.2rem; }
+  .mic.on { background:var(--bad); color:#fff; border-color:var(--bad); animation:pulse 1.2s infinite; }
+  @keyframes pulse { 50% { box-shadow:0 0 0 6px rgba(179,38,30,.18); } }
+  .hint { color:var(--muted); font-size:.82rem; min-height:1.2em; margin-top:4px; }
+  .actions { margin-top:24px; display:flex; gap:10px; }
+  pre { background:#f3f4f7; padding:12px; border-radius:8px; white-space:pre-wrap; direction:rtl; }
+</style>
+</head>
+<body>
+<main>
+  <h1>نموذج تجريبي — إدخال صوتي محلي</h1>
+  <p class="sub">يتم تحويل الصوت إلى نص داخل المتصفح على جهازك فقط (Chrome on-device). لا يُرسل الصوت إلى Google ولا إلى أي خادم.</p>
+
+  <div id="status" class="status">جارٍ التحقق من توفر التعرف على الكلام محلياً…</div>
+
+  <label for="lang">اللهجة / اللغة</label>
+  <select id="lang">
+    <option value="ar-SA">العربية (السعودية) ar-SA</option>
+    <option value="ar-QA">العربية (قطر) ar-QA</option>
+    <option value="ar-AE">العربية (الإمارات) ar-AE</option>
+    <option value="ar-EG">العربية (مصر) ar-EG</option>
+    <option value="ar-JO">العربية (الأردن) ar-JO</option>
+    <option value="en-US">English (US) en-US</option>
+  </select>
+
+  <form id="form" autocomplete="off">
+    <label for="name">الاسم</label>
+    <div class="row">
+      <input type="text" id="name" name="name">
+      <button type="button" class="mic" data-target="name" title="تحدث">🎤</button>
+    </div>
+
+    <label for="subject">الموضوع</label>
+    <div class="row">
+      <input type="text" id="subject" name="subject">
+      <button type="button" class="mic" data-target="subject" title="تحدث">🎤</button>
+    </div>
+
+    <label for="message">نص الرسالة</label>
+    <div class="row">
+      <textarea id="message" name="message"></textarea>
+      <button type="button" class="mic" data-target="message" data-continuous="1" title="تحدث">🎤</button>
+    </div>
+    <div class="hint" id="hint"></div>
+
+    <div class="actions">
+      <button type="submit" class="primary">إرسال (عرض محلي فقط)</button>
+      <button type="reset">مسح</button>
+    </div>
+  </form>
+
+  <pre id="out" hidden></pre>
+</main>
+
+<script>
+(() => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const statusEl = document.getElementById('status');
+  const hintEl = document.getElementById('hint');
+  const langSel = document.getElementById('lang');
+  const mics = [...document.querySelectorAll('.mic')];
+  let active = null;      // { rec, btn }
+  let localReady = false; // on-device pack installed for current language
+
+  function setStatus(html, kind = '') {
+    statusEl.className = 'status ' + kind;
+    statusEl.innerHTML = html;
+  }
+  function setMicsEnabled(on) { mics.forEach(b => b.disabled = !on); }
+
+  // 1) Check that the browser supports on-device recognition at all.
+  async function checkAvailability() {
+    localReady = false;
+    setMicsEnabled(false);
+    const lang = langSel.value;
+
+    if (!SR) {
+      setStatus('هذا المتصفح لا يدعم Web Speech API. استخدم Google Chrome حديثاً.', 'bad');
+      return;
+    }
+    if (typeof SR.available !== 'function' || !('processLocally' in SR.prototype)) {
+      setStatus('إصدار Chrome لديك لا يدعم التعرف المحلي (يتطلب Chrome 139 أو أحدث). لن يتم تفعيل الميكروفون حتى لا يُرسل الصوت إلى الخادم.', 'bad');
+      return;
+    }
+
+    let state;
+    try {
+      state = await SR.available({ langs: [lang], processLocally: true });
+    } catch (e) {
+      setStatus('تعذّر التحقق من التوفر: ' + e.message, 'bad');
+      return;
+    }
+
+    if (state === 'available') {
+      localReady = true;
+      setMicsEnabled(true);
+      setStatus(`✅ حزمة اللغة <b>${lang}</b> مثبتة على جهازك — التعرف على الكلام يتم محلياً بالكامل.`);
+    } else if (state === 'downloadable' || state === 'downloading') {
+      setStatus(
+        `حزمة اللغة <b>${lang}</b> غير مثبتة بعد (${state === 'downloading' ? 'جارٍ التنزيل' : 'قابلة للتنزيل'}). ` +
+        `يتم تنزيل النموذج مرة واحدة فقط، وبعدها يعمل دون إنترنت.` +
+        `<button type="button" id="installBtn" class="primary">تنزيل الحزمة</button>`, 'warn');
+      document.getElementById('installBtn').onclick = installPack; // install() needs a user click
+    } else {
+      setStatus(`❌ التعرف المحلي غير متوفر للغة <b>${lang}</b> على هذا الجهاز/الإصدار. جرّب لهجة أخرى. (لن نستخدم خوادم Google كبديل.)`, 'bad');
+    }
+  }
+
+  // 2) Download the on-device language pack (one-time). Audio is never sent; only the model is downloaded.
+  async function installPack() {
+    const lang = langSel.value;
+    setStatus(`جارٍ تنزيل حزمة <b>${lang}</b>… قد يستغرق ذلك بعض الوقت.`, 'warn');
+    try {
+      const ok = await SR.install({ langs: [lang], processLocally: true });
+      if (!ok) { setStatus(`فشل تنزيل حزمة ${lang}. قد لا تكون مدعومة.`, 'bad'); return; }
+    } catch (e) {
+      setStatus('خطأ أثناء التنزيل: ' + e.message, 'bad'); return;
+    }
+    checkAvailability();
+  }
+
+  // 3) Start/stop recognition into a field, forcing local processing.
+  function toggle(btn) {
+    if (active) {
+      const wasSame = active.btn === btn;
+      active.rec.stop();
+      if (wasSame) return;
+    }
+    if (!localReady) return;
+
+    const field = document.getElementById(btn.dataset.target);
+    const continuous = btn.dataset.continuous === '1';
+    const rec = new SR();
+    rec.lang = langSel.value;
+    rec.processLocally = true;   // <-- the key line: on-device only, no cloud fallback
+    rec.interimResults = true;
+    rec.continuous = continuous;
+    rec.maxAlternatives = 1;
+
+    const base = field.value ? field.value.replace(/\s*$/, ' ') : '';
+    let finalText = '';
+
+    rec.onstart = () => { btn.classList.add('on'); hintEl.textContent = 'أستمع… (محلياً)'; };
+    rec.onresult = (ev) => {
+      let interim = '';
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const r = ev.results[i];
+        if (r.isFinal) finalText += r[0].transcript + ' ';
+        else interim += r[0].transcript;
+      }
+      field.value = (base + finalText + interim).trimStart();
+    };
+    rec.onerror = (ev) => {
+      const msgs = {
+        'not-allowed': 'تم رفض إذن الميكروفون.',
+        'audio-capture': 'لم يتم العثور على ميكروفون.',
+        'no-speech': 'لم يتم التقاط أي كلام.',
+        'language-not-supported': 'اللغة غير مدعومة محلياً.',
+        'service-not-allowed': 'الخدمة المحلية غير مسموحة.',
+        'network': 'خطأ شبكة — يجب ألا يحدث في الوضع المحلي.',
+        'aborted': ''
+      };
+      hintEl.textContent = msgs[ev.error] ?? ('خطأ: ' + ev.error);
+    };
+    rec.onend = () => {
+      btn.classList.remove('on');
+      field.value = field.value.trim();
+      if (active && active.rec === rec) active = null;
+      if (!hintEl.textContent.startsWith('خطأ') && hintEl.textContent === 'أستمع… (محلياً)') hintEl.textContent = '';
+    };
+
+    active = { rec, btn };
+    field.focus();
+    rec.start();
+  }
+
+  mics.forEach(b => b.addEventListener('click', () => toggle(b)));
+  langSel.addEventListener('change', () => { if (active) active.rec.abort(); checkAvailability(); });
+
+  document.getElementById('form').addEventListener('submit', (e) => {
+    e.preventDefault(); // demo: nothing is sent anywhere
+    const data = Object.fromEntries(new FormData(e.target));
+    const out = document.getElementById('out');
+    out.hidden = false;
+    out.textContent = JSON.stringify(data, null, 2);
+  });
+
+  checkAvailability();
+})();
+</script>
+</body>
+</html>
