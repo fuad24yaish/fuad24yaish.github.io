@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تفريغ الاجتماعات ومحاضرها — محلي / خوادم المؤسسة</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+<style>
+  :root { --ink:#1d2433; --muted:#6b7385; --line:#d9dde6; --accent:#0f6b5c; --bad:#b3261e; --warn:#a15c00; --bg:#f6f7f9; --soft:#f3f4f7; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif; background:var(--bg); color:var(--ink); }
+  main { max-width:920px; margin:28px auto; }
+  section { background:#fff; border:1px solid var(--line); border-radius:12px; padding:24px 26px; margin-bottom:18px; }
+  h1 { font-size:1.35rem; margin:0 0 6px; }
+  h2 { font-size:1.12rem; margin:0 0 12px; }
+  .sub { color:var(--muted); margin:0 0 16px; font-size:.92rem; line-height:1.6; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; align-items:end; }
+  label { display:block; font-weight:600; margin:0 0 6px; font-size:.88rem; }
+  input[type=text], input[type=password], input[type=number], input[type=date], select, textarea { width:100%; font:inherit; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  textarea { resize:vertical; }
+  .ltr { direction:ltr; text-align:left; }
+  button { font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line); background:#fff; padding:9px 14px; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button.danger { color:var(--bad); border-color:var(--bad); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .status { padding:11px 14px; border-radius:8px; background:#fdf3e4; color:var(--warn); margin:14px 0; font-size:.9rem; }
+  .status.ok { background:#eef6f4; color:var(--accent); }
+  .status.bad { background:#fbeceb; color:var(--bad); }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .seg label { margin:0; padding:9px 14px; cursor:pointer; font-weight:500; }
+  .seg input { display:none; }
+  .seg input:checked + span { color:var(--accent); font-weight:700; }
+  .seg label:has(input:checked) { background:#eef6f4; }
+  .drop { border:2px dashed var(--line); border-radius:10px; padding:24px; text-align:center; color:var(--muted); cursor:pointer; transition:.15s; }
+  .drop.over { border-color:var(--accent); background:#eef6f4; }
+  .drop.disabled { opacity:.5; pointer-events:none; }
+  .drop b { color:var(--ink); }
+  progress { width:100%; height:10px; }
+  .meta { display:flex; justify-content:space-between; color:var(--muted); font-size:.85rem; margin-top:4px; gap:12px; flex-wrap:wrap; }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; align-items:center; }
+  .box { border:1px solid var(--line); border-radius:8px; padding:14px; min-height:180px; max-height:55vh; overflow:auto; line-height:1.9; }
+  .box:focus { outline:2px solid #cfe6e1; }
+  .line { margin:0 0 6px; }
+  .ts { color:var(--accent); font-family:Consolas,monospace; font-size:.82rem; direction:ltr; unicode-bidi:isolate; margin-inline-end:8px; cursor:pointer; }
+  .empty { color:var(--muted); }
+  audio { width:100%; margin-top:12px; }
+  details { border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-top:12px; background:var(--soft); }
+  details summary { cursor:pointer; font-weight:700; }
+  details .grid { margin-top:12px; }
+  .hint { color:var(--muted); font-size:.82rem; margin-top:6px; line-height:1.6; }
+  .note { font-size:.82rem; color:var(--muted); }
+  #mom { background:#fff; }
+  #mom table { border-collapse:collapse; width:100%; margin:10px 0; }
+  #mom th, #mom td { border:1px solid var(--line); padding:6px 8px; vertical-align:top; }
+  #mom th { background:var(--soft); }
+  #mom h1 { font-size:1.3rem; } #mom h2 { font-size:1.08rem; margin-top:18px; border-bottom:1px solid var(--line); padding-bottom:4px; }
+  #momEdit { min-height:340px; font-family:Consolas,"Segoe UI",monospace; font-size:.9rem; }
+  .history { font-size:.84rem; color:var(--muted); margin:8px 0 0; padding-inline-start:18px; }
+  .row { display:flex; gap:8px; align-items:flex-start; }
+  .row textarea { flex:1; }
+  header { margin-bottom:14px; }
+  .tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:-1px; position:relative; z-index:1; }
+  .tabs button { border:1px solid transparent; border-bottom:none; border-radius:10px 10px 0 0; background:transparent; padding:11px 20px; color:var(--muted); font-weight:600; }
+  .tabs button.active { background:#fff; border-color:var(--line); color:var(--ink); }
+  .tabs .badge { display:inline-block; min-width:8px; height:8px; border-radius:50%; background:var(--accent); margin-inline-start:6px; vertical-align:middle; }
+  .tabpanel { border-top-right-radius:0; }
+  [dir=rtl] .tabpanel { border-top-right-radius:0; border-top-left-radius:12px; }
+  .linkbtn { background:none; border:none; padding:0; color:var(--accent); text-decoration:underline; cursor:pointer; font:inherit; }
+  /* ---------- Settings tab ---------- */
+  .set-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+  .pill { font-size:.8rem; padding:4px 10px; border-radius:99px; background:#eef6f4; color:var(--accent); transition:opacity .3s; }
+  .pill.saving { background:var(--soft); color:var(--muted); }
+  .set-layout { display:grid; grid-template-columns:210px 1fr; gap:20px; }
+  .set-nav { display:flex; flex-direction:column; gap:4px; }
+  .set-nav button { display:flex; align-items:center; gap:8px; text-align:start; border:none; background:transparent; padding:10px 12px; border-radius:8px; color:var(--muted); font-weight:600; }
+  .set-nav button:hover { background:var(--soft); }
+  .set-nav button.active { background:#eef6f4; color:var(--accent); }
+  .set-nav span { flex:1; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#cfd3dc; flex:0 0 8px; }
+  .dot.ok { background:#1e9e6a; } .dot.err { background:var(--bad); } .dot.mod { background:var(--warn); }
+  .card { border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:14px; }
+  .card-h { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:14px; }
+  .card-h h3 { margin:0 0 4px; font-size:1rem; }
+  .card-h p { margin:0; color:var(--muted); font-size:.85rem; line-height:1.6; }
+  .preset { width:auto !important; min-width:170px; font-size:.85rem; }
+  .fields { display:grid; grid-template-columns:repeat(2,1fr); gap:14px 16px; }
+  .f.wide { grid-column:1/-1; }
+  .f small { display:block; color:var(--muted); font-size:.78rem; margin-top:4px; }
+  .f em { font-style:normal; font-weight:400; color:var(--muted); font-size:.8rem; }
+  .f output { font-weight:700; color:var(--accent); margin-inline-start:6px; }
+  input[type=range] { width:100%; accent-color:var(--accent); }
+  .pw { display:flex; } .pw input { border-start-end-radius:0; border-end-end-radius:0; }
+  [dir=rtl] .pw input { border-radius:0 8px 8px 0; }
+  .pw .eye { border-inline-start:none; border-radius:0; padding:0 10px; }
+  [dir=rtl] .pw .eye { border-radius:8px 0 0 8px; border-right:none; border-left:1px solid var(--line); }
+  .card-f { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .res { font-size:.85rem; }
+  .res.ok { color:#1e7a55; } .res.err { color:var(--bad); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chips button { border-radius:99px; padding:6px 14px; font-size:.85rem; position:relative; }
+  .chips button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .chips button.mod::after { content:''; position:absolute; top:3px; inset-inline-end:5px; width:7px; height:7px; border-radius:50%; background:var(--warn); }
+  .vars { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .vars button { font-family:Consolas,monospace; font-size:.78rem; padding:3px 9px; border-radius:6px; background:var(--soft); direction:ltr; }
+  #promptEditor { min-height:360px; font-family:Consolas,"Cascadia Mono","Segoe UI",monospace; font-size:.86rem; line-height:1.6; }
+  #promptEditor[dir=rtl] { font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif; font-size:.95rem; }
+  .toggle { display:flex; align-items:center; gap:10px; font-weight:500; cursor:pointer; margin:0; }
+  .callout { background:#fdf3e4; color:var(--warn); border-radius:8px; padding:12px 14px; font-size:.86rem; }
+  @media (max-width:720px) {
+    .set-layout { grid-template-columns:1fr; }
+    .set-nav { flex-direction:row; overflow:auto; }
+    .set-nav button span { white-space:nowrap; }
+    .fields { grid-template-columns:1fr; }
+    .card-h { flex-direction:column; }
+  }
+  /* ---------- Recording tab ---------- */
+  .rec-setup { display:grid; grid-template-columns:2fr 1.5fr 1fr; gap:12px; margin-bottom:16px; align-items:end; }
+  .rec-stage { text-align:center; padding:28px 12px 20px; border:1px solid var(--line); border-radius:12px; background:var(--soft); margin-bottom:16px; }
+  .rec-btn { width:86px; height:86px; border-radius:50%; border:5px solid #fff; background:var(--bad); box-shadow:0 0 0 2px var(--bad); display:inline-flex; align-items:center; justify-content:center; padding:0; }
+  .rec-btn span { width:30px; height:30px; border-radius:50%; background:#fff; transition:.2s; }
+  .rec-btn.on span { width:26px; height:26px; border-radius:5px; }
+  .rec-btn.on { animation:pulse 1.4s infinite; }
+  .rec-time { font-family:Consolas,monospace; font-size:2.3rem; margin:14px 0 8px; direction:ltr; }
+  .meter { height:8px; max-width:320px; margin:0 auto 12px; background:#e3e6ec; border-radius:99px; overflow:hidden; }
+  .meter div { height:100%; width:0; background:linear-gradient(90deg,#1e9e6a 0%,#e0a800 70%,#b3261e 100%); transition:width .08s; }
+  .tabs .rec-live { color:var(--bad); margin-inline-start:6px; animation:blink 1s infinite; }
+  @keyframes blink { 50% { opacity:.2; } }
+  .prof-bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:12px; background:var(--soft); border-radius:8px; margin-bottom:14px; }
+  .prof-bar select { width:auto; min-width:200px; flex:1; }
+  @media (max-width:720px) { .rec-setup { grid-template-columns:1fr; } }
+  /* ---------- Help ---------- */
+  .help-link { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--accent); font-size:.75rem; font-weight:700; padding:0; margin-inline-start:6px; vertical-align:middle; cursor:pointer; }
+  .help-link:hover { background:#eef6f4; border-color:var(--accent); }
+  .help-flow { display:flex; align-items:stretch; gap:8px; margin:6px 0 18px; flex-wrap:wrap; }
+  .help-flow div { flex:1; min-width:130px; background:var(--soft); border-radius:10px; padding:10px 12px; text-align:center; }
+  .help-flow b { display:block; font-size:.92rem; } .help-flow small { color:var(--muted); font-size:.78rem; }
+  .help-flow i { align-self:center; color:var(--muted); font-style:normal; }
+  details.help { border:1px solid var(--line); border-radius:10px; padding:0 16px; margin-bottom:10px; background:#fff; scroll-margin-top:16px; }
+  details.help summary { cursor:pointer; font-weight:700; padding:14px 0; }
+  details.help[open] { padding-bottom:12px; }
+  details.help.flash { animation:flash 1.6s; }
+  @keyframes flash { 0%,40% { background:#eef6f4; border-color:var(--accent); } }
+  details.help ul, details.help ol { line-height:1.9; margin:0 0 8px; padding-inline-start:22px; }
+  details.help h4 { margin:16px 0 6px; font-size:.95rem; }
+  details.help p { line-height:1.8; margin:6px 0; }
+  .help-table { border-collapse:collapse; width:100%; margin:8px 0 12px; font-size:.88rem; }
+  .help-table th, .help-table td { border:1px solid var(--line); padding:7px 9px; vertical-align:top; text-align:start; }
+  .help-table th { background:var(--soft); }
+  .help-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .help-cols pre, #promptPreviewBox pre { background:var(--soft); border-radius:8px; padding:10px; font-size:.8rem; white-space:pre-wrap; margin:4px 0 0; text-align:left; }
+  details.help code { background:var(--soft); padding:1px 5px; border-radius:4px; font-size:.85em; direction:ltr; unicode-bidi:isolate; }
+  details.help dt { font-weight:700; margin-top:10px; } details.help dd { margin:2px 0 0; color:#3b4252; line-height:1.7; }
+  .help-cols pre, #previewText { unicode-bidi:plaintext; text-align:start; }
+  #promptPreviewBox { margin-top:12px; border:1px dashed var(--line); border-radius:8px; padding:12px; }
+  #promptPreviewBox pre { max-height:360px; overflow:auto; }
+  @media (max-width:720px) { .help-cols { grid-template-columns:1fr; } .help-flow i { display:none; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>تفريغ الاجتماعات وإعداد المحاضر</h1>
+  <p class="sub">التفريغ يتم إما داخل المتصفح على جهازك، أو على خادم Whisper تحدده أنت. ثم يُعدّ نموذج اللغة الذي تحدده (مثل Llama 3.3 70B في مؤسستك) محضر الاجتماع، ويمكنك طلب تعديلات عليه.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button type="button" role="tab" data-tab="record">١. التسجيل</button>
+  <button type="button" role="tab" data-tab="transcribe" class="active">٢. التفريغ</button>
+  <button type="button" role="tab" data-tab="mom">٣. محضر الاجتماع</button>
+  <button type="button" role="tab" data-tab="settings">⚙️ الإعدادات</button>
+  <button type="button" role="tab" data-tab="help">❓ المساعدة</button>
+</nav>
+
+<!-- ===================== TAB: RECORDING ===================== -->
+<section id="tab-record" class="tabpanel" hidden>
+  <h2>تسجيل الاجتماع من المتصفح <button type="button" class="help-link" data-help="record" title="شرح">؟</button></h2>
+  <p class="sub">سجّل الاجتماع مباشرة من ميكروفون الجهاز. يُحفظ التسجيل تلقائياً على جهازك كل 5 ثوانٍ، فلا يضيع إذا أُغلقت الصفحة أو تعطّل المتصفح. الصوت لا يُرسل إلى أي مكان أثناء التسجيل.</p>
+
+  <div id="recRecover" class="callout" style="margin-bottom:14px" hidden></div>
+
+  <div class="rec-setup">
+    <div class="f"><label for="micSel">الميكروفون</label><select id="micSel"><option value="">الميكروفون الافتراضي</option></select></div>
+    <div class="f"><label for="recQuality">الجودة</label>
+      <select id="recQuality">
+        <option value="24000">اقتصادية — ~11 MB/ساعة</option>
+        <option value="32000" selected>عادية — ~14 MB/ساعة (موصى بها)</option>
+        <option value="64000">عالية — ~29 MB/ساعة</option>
+      </select></div>
+    <div class="f"><label>&nbsp;</label><label class="toggle"><input type="checkbox" id="recClean" checked> إزالة الضجيج والصدى</label></div>
+  </div>
+
+  <div class="rec-stage">
+    <button type="button" id="recBtn" class="rec-btn" title="بدء التسجيل" aria-label="بدء/إنهاء التسجيل"><span></span></button>
+    <div class="rec-time" id="recTime">00:00:00</div>
+    <div class="meter"><div id="recLevel"></div></div>
+    <div id="recState" class="note">اضغط الزر الأحمر لبدء التسجيل، واضغطه مرة أخرى لإنهائه.</div>
+    <div class="actions" style="justify-content:center;margin-bottom:0">
+      <button type="button" id="recPause" hidden>⏸ إيقاف مؤقت</button>
+    </div>
+  </div>
+
+  <div id="recResult" class="card" hidden>
+    <div class="card-h"><div><h3>التسجيل</h3><p id="recInfo"></p></div></div>
+    <audio id="recPlayer" controls style="width:100%"></audio>
+    <div class="f" style="margin-top:12px"><label for="recName">اسم التسجيل</label><input type="text" id="recName"></div>
+    <div class="card-f">
+      <button type="button" id="recTranscribe" class="primary">تفريغ هذا التسجيل ←</button>
+      <button type="button" id="recDownload">تنزيل الملف</button>
+      <button type="button" id="recDelete" class="danger" style="margin-inline-start:auto">حذف التسجيل</button>
+    </div>
+  </div>
+  <div class="hint">💡 للاجتماعات الطويلة: صِل الجهاز بالشاحن وأبقِ هذه الصفحة مفتوحة (يمكنك التنقل بين تبويباتها أثناء التسجيل). تبقى الشاشة مضاءة تلقائياً أثناء التسجيل.</div>
+</section>
+
+<!-- ===================== TAB: HELP ===================== -->
+<section id="tab-help" class="tabpanel" hidden>
+  <h2>دليل الاستخدام</h2>
+  <p class="sub">اضغط على أي قسم لفتحه. يمكنك أيضاً الضغط على زر <span class="help-link" style="pointer-events:none">؟</span> بجانب أي ميزة في التطبيق للانتقال مباشرة إلى شرحها هنا.</p>
+
+  <div class="help-flow">
+    <div><b>١. التسجيل</b><small>من المتصفح، أو ارفع ملفاً جاهزاً</small></div><i>←</i>
+    <div><b>٢. التفريغ</b><small>Whisper محلياً أو على خادم</small></div><i>←</i>
+    <div><b>٣. المحضر</b><small>نموذج لغة + قالب تعليمات</small></div><i>←</i>
+    <div><b>التعديل والتنزيل</b><small>Word · PDF · Markdown</small></div>
+  </div>
+
+  <details class="help" id="help-start" open>
+    <summary>🚀 البدء السريع</summary>
+    <ol>
+      <li>افتح <b>⚙️ الإعدادات</b> وأدخل بيانات خادم نموذج اللغة (وخادم Whisper إن أردت التفريغ على الخادم)، ثم اضغط «اختبار الاتصال». إذا أرسل لك أحد ملف إعدادات، استورده من «النسخ الاحتياطي» وانتهى الأمر.</li>
+      <li>في <b>١. التسجيل</b> سجّل الاجتماع — أو انتقل مباشرة إلى <b>٢. التفريغ</b> واسحب ملفاً صوتياً (مثل ملف m4a من «المذكرات الصوتية» في الآيفون).</li>
+      <li>انتظر انتهاء التفريغ، وصحّح أي كلمات خاطئة يدوياً داخل مربع النص.</li>
+      <li>في <b>٣. محضر الاجتماع</b> أدخل العنوان والحضور، اختر لغة المحضر و«قالب التعليمات»، ثم اضغط «إنشاء المحضر».</li>
+      <li>اطلب تعديلات بلغة عادية، ثم نزّل المحضر بصيغة Word أو PDF.</li>
+    </ol>
+  </details>
+
+  <details class="help" id="help-record">
+    <summary>🎙️ التسجيل من المتصفح</summary>
+    <ul>
+      <li><b>الحفظ التلقائي:</b> يُحفظ التسجيل على جهازك (داخل المتصفح) كل 5 ثوانٍ. إذا أُغلقت الصفحة أو تعطّل المتصفح، ستظهر رسالة «يوجد تسجيل لم يكتمل» عند فتح الصفحة مرة أخرى لاستعادته.</li>
+      <li><b>الإيقاف المؤقت</b> لا يُنهي التسجيل؛ الضغط على الزر الأحمر يُنهيه.</li>
+      <li><b>الجودة:</b> «عادية» كافية للكلام (~14 MB لكل ساعة). «إزالة الضجيج والصدى» مفيدة في الغرف ذات الصدى؛ أوقفها إذا بدا الصوت متقطعاً.</li>
+      <li>يُحتفظ بآخر تسجيل فقط. بدء تسجيل جديد يستبدله — نزّله أولاً إن احتجت إليه.</li>
+      <li>نصيحة: صِل الجهاز بالشاحن، وضع الجهاز في منتصف الطاولة، وأبقِ الصفحة مفتوحة.</li>
+    </ul>
+  </details>
+
+  <details class="help" id="help-transcribe">
+    <summary>📝 التفريغ: محلي أم على الخادم؟</summary>
+    <table class="help-table">
+      <tr><th></th><th>محلي (المتصفح)</th><th>خادم Whisper</th></tr>
+      <tr><td>أين يُعالَج الصوت</td><td>على جهازك فقط</td><td>على الخادم الذي تحدده في الإعدادات</td></tr>
+      <tr><td>الإعداد</td><td>تحميل النموذج مرة واحدة (0.25–1.3 GB)</td><td>عنوان الخادم واسم النموذج</td></tr>
+      <tr><td>السرعة</td><td>تعتمد على كرت الشاشة؛ بطيء على المعالج فقط</td><td>عادة أسرع، مع طلبات متوازية</td></tr>
+      <tr><td>بدون إنترنت</td><td>نعم بعد تحميل النموذج</td><td>يحتاج الوصول إلى الخادم</td></tr>
+    </table>
+    <ul>
+      <li>يُقسَّم الصوت إلى مقاطع ~28 ثانية عند لحظات الصمت حتى لا تُقطع الكلمات، وتُتجاهل المقاطع الصامتة.</li>
+      <li>تُحذف تلقائياً عبارات معروفة يخترعها Whisper عند الصمت (مثل «ترجمة نانسي قنقر»).</li>
+      <li>اضغط على أي توقيت <span class="ts" style="cursor:default">[00:12:30]</span> لتشغيل التسجيل من تلك اللحظة والتحقق من النص.</li>
+      <li>صحّح النص يدوياً قبل إعداد المحضر — المحضر يُبنى على النص كما هو في المربع.</li>
+      <li>«فتح نص جاهز» يتيح إعداد محضر من تفريغ موجود مسبقاً دون تسجيل.</li>
+    </ul>
+  </details>
+
+  <details class="help" id="help-mom">
+    <summary>📄 إعداد المحضر وطلب التعديلات</summary>
+    <ul>
+      <li>يُرسل إلى نموذج اللغة: <b>تعليمات القالب المختار</b> + <b>بيانات الاجتماع</b> (العنوان، التاريخ، الحضور، التعليمات الإضافية) + <b>نص التفريغ</b>.</li>
+      <li><b>الحضور:</b> إدخال الأسماء والأدوار يحسّن الدقة كثيراً، لأن التفريغ لا يميّز المتحدثين.</li>
+      <li><b>التعليمات الإضافية</b> تخص هذا الاجتماع فقط (مثل: «ركّز على القرارات المالية»). للتغييرات الدائمة عدّل قالب التعليمات.</li>
+      <li><b>الاجتماعات الطويلة:</b> إذا كان النص أطول من «حجم الجزء» في الإعدادات، يُلخَّص كل جزء أولاً ثم يُكتب المحضر من الملخصات.</li>
+      <li><b>طلب تعديل:</b> اكتب ما تريد بلغة عادية (مثال: «أضف عمود الحالة لجدول المهام»). يعيد النموذج المحضر كاملاً بعد التعديل. «تراجع» يعيد النسخة السابقة، و«تحرير يدوي» يتيح التعديل بنفسك.</li>
+      <li>راجع المحضر دائماً قبل اعتماده — النموذج قد يخطئ في الأسماء أو الأرقام إذا كان التفريغ غير واضح.</li>
+    </ul>
+  </details>
+
+  <details class="help" id="help-templates">
+    <summary>🧩 قوالب التعليمات والمتغيرات مثل {{template}}</summary>
+    <p><b>قالب التعليمات</b> مجموعة مسمّاة من خمسة نصوص تحدد كيف يكتب النموذج المحضر ويعدّله. يمكنك إنشاء عدة قوالب (مثل «محضر رسمي»، «ملخص مختصر»، «اجتماع فني») واختيار أحدها في تبويب المحضر.</p>
+    <table class="help-table">
+      <tr><th>النص</th><th>متى يُستخدم</th></tr>
+      <tr><td>تعليمات المحضر</td><td>عند كل «إنشاء المحضر» — القواعد: الأسلوب، عدم اختلاق المعلومات، ماذا يُكتب عند غياب المعلومة.</td></tr>
+      <tr><td>قالب المحضر — عربي</td><td>هيكل المستند عند اختيار العربية؛ يُدرج داخل التعليمات مكان <code>{{template}}</code>.</td></tr>
+      <tr><td>قالب المحضر — English</td><td>هيكل المستند عند اختيار الإنجليزية.</td></tr>
+      <tr><td>تلخيص الأجزاء</td><td>للاجتماعات الطويلة فقط — يُلخَّص كل جزء بها أولاً.</td></tr>
+      <tr><td>تعليمات التعديل</td><td>عند «طلب تعديل على المحضر».</td></tr>
+    </table>
+
+    <h4>المتغيرات</h4>
+    <p>قبل الإرسال مباشرة تُستبدل هذه الكلمات تلقائياً:</p>
+    <table class="help-table">
+      <tr><th>المتغير</th><th>يُستبدل بـ</th></tr>
+      <tr><td><code>{{template}}</code></td><td>الهيكل الكامل للمحضر — العربي أو الإنجليزي حسب «لغة المحضر».</td></tr>
+      <tr><td><code>{{language}}</code></td><td>اسم اللغة، مثل: Modern Standard Arabic (formal, official register).</td></tr>
+      <tr><td><code>{{unknown}}</code></td><td>«غير محدد» بالعربية، أو "Not specified" بالإنجليزية.</td></tr>
+    </table>
+
+    <h4>مثال</h4>
+    <div class="help-cols">
+      <div><small>ما تكتبه في «تعليمات المحضر»:</small>
+<pre dir="ltr">- Write in {{language}}.
+- If unknown, write "{{unknown}}".
+- Follow this structure:
+
+{{template}}</pre></div>
+      <div><small>ما يصل فعلياً إلى النموذج (عند اختيار العربية):</small>
+<pre dir="ltr">- Write in Modern Standard Arabic (formal…).
+- If unknown, write "غير محدد".
+- Follow this structure:
+
+# محضر اجتماع: &lt;العنوان&gt;
+## جدول الأعمال …
+## المهام والإجراءات
+| # | المهمة | المسؤول | الموعد النهائي |</pre></div>
+    </div>
+
+    <h4>لماذا الفصل بين التعليمات والهيكل؟</h4>
+    <ul>
+      <li><b>لتغيير شكل المستند</b> (إضافة عمود، تغيير العناوين، ترويسة المؤسسة) ← عدّل «قالب المحضر — عربي/English».</li>
+      <li><b>لتغيير السلوك</b> (أقصر، تركيز على القرارات، ذكر المتحدث) ← عدّل «تعليمات المحضر».</li>
+      <li>مجموعة قواعد واحدة تخدم اللغتين؛ الهيكل فقط يتغير حسب اللغة.</li>
+      <li>إذا حذفت <code>{{template}}</code> لن يُدرج أي هيكل وسيختار النموذج شكلاً بنفسه — لذلك يظهر تحذير في المحرر.</li>
+    </ul>
+    <p>💡 استخدم زر <b>«معاينة ما يُرسل»</b> في محرر التعليمات لترى النص النهائي بعد استبدال المتغيرات.</p>
+    <p>💡 لتجربة تعديل دون إفساد قالب يعمل جيداً: اضغط «نسخ» وعدّل النسخة.</p>
+  </details>
+
+  <details class="help" id="help-settings">
+    <summary>⚙️ الإعدادات، المفاتيح، ومشاركة الإعدادات</summary>
+    <ul>
+      <li>تُحفظ الإعدادات تلقائياً في هذا المتصفح فقط. على جهاز أو متصفح آخر ستحتاج إلى استيرادها.</li>
+      <li><b>القوالب الجاهزة</b> تملأ العنوان واسم النموذج لخوادم شائعة (vLLM، Ollama، OpenAI…) — عدّل العنوان ليطابق خادمكم.</li>
+      <li><b>اختبار الاتصال</b> يجلب قائمة النماذج المتاحة على الخادم لتختار منها.</li>
+      <li><b>مفاتيح API</b> لا تُحفظ افتراضياً. فعّل «حفظ مفاتيح API» إن أردت عدم إدخالها كل مرة.</li>
+      <li><b>التصدير</b> ينشئ ملف JSON بالإعدادات وكل قوالب التعليمات. عند تفعيل «تضمين مفاتيح API» يحتوي الملف على المفاتيح بنص واضح — شاركه فقط عبر قناة آمنة. المستلم يضغط «استيراد من ملف» ويبدأ مباشرة.</li>
+      <li><b>Temperature</b> منخفضة (0–0.3) = التزام أكبر بالنص؛ مناسبة للمحاضر.</li>
+    </ul>
+  </details>
+
+  <details class="help" id="help-privacy">
+    <summary>🔒 أين تذهب بياناتي؟</summary>
+    <table class="help-table">
+      <tr><th>البيانات</th><th>الوجهة</th></tr>
+      <tr><td>التسجيل الصوتي</td><td>يبقى على جهازك. يُرسل فقط إذا اخترت «خادم Whisper» — وإلى الخادم الذي حددته فقط.</td></tr>
+      <tr><td>نص التفريغ وبيانات الاجتماع</td><td>تُرسل إلى خادم نموذج اللغة الذي حددته عند إنشاء المحضر أو تعديله.</td></tr>
+      <tr><td>الإعدادات والمفاتيح والقوالب</td><td>في هذا المتصفح فقط (localStorage).</td></tr>
+      <tr><td>نماذج Whisper المحلية ومكتبة التشغيل</td><td>تُحمَّل مرة واحدة من الإنترنت (Hugging Face و jsDelivr) — دون إرسال أي صوت أو نص.</td></tr>
+    </table>
+    <p>⚠️ إذا استخدمت OpenAI أو أي خدمة خارجية في الإعدادات، فسيُرسل النص إليها. لاجتماعات سرية استخدم الوضع المحلي وخوادم مؤسستك فقط.</p>
+  </details>
+
+  <details class="help" id="help-trouble">
+    <summary>🛠️ حل المشكلات</summary>
+    <dl>
+      <dt>«Failed to fetch» أو «تعذّر الوصول»</dt>
+      <dd>الخادم لا يسمح بطلبات من هذه الصفحة (CORS)، أو العنوان خاطئ، أو أنك خارج شبكة المؤسسة. اطلب من فريق تقنية المعلومات السماح بالعنوان <code dir="ltr">http://localhost:8000</code>.</dd>
+      <dt>HTTP 401 / 403</dt>
+      <dd>مفتاح API خاطئ أو مفقود.</dd>
+      <dt>خطأ حول max_tokens أو temperature</dt>
+      <dd>يُعالج تلقائياً — التطبيق يعيد المحاولة بالاسم الصحيح للمعامل.</dd>
+      <dt>المحضر فارغ أو مقطوع</dt>
+      <dd>زد «أقصى طول للرد». نماذج التفكير (gpt-5، o-series) تحتاج 16000 أو أكثر.</dd>
+      <dt>خطأ «context length» أو طلب كبير جداً</dt>
+      <dd>قلّل «حجم الجزء للنصوص الطويلة» ليناسب سياق النموذج على الخادم.</dd>
+      <dt>دقة التفريغ ضعيفة</dt>
+      <dd>استخدم Turbo أو خادم Whisper كبيراً، اختر «العربية» بدلاً من «تلقائي»، قرّب الميكروفون، وصحّح الأسماء يدوياً قبل إعداد المحضر.</dd>
+      <dt>التفريغ المحلي بطيء جداً</dt>
+      <dd>المتصفح لا يستخدم كرت الشاشة (WebGPU). جرّب Whisper Small أو خادم المؤسسة.</dd>
+      <dt>«تعذّر قراءة الملف الصوتي»</dt>
+      <dd>حوّل الملف إلى mp3 أو wav وأعد المحاولة.</dd>
+      <dt>تعذّر الوصول إلى الميكروفون</dt>
+      <dd>اسمح للموقع باستخدام الميكروفون من أيقونة القفل بجانب العنوان، وتأكد أن الصفحة تُفتح عبر <code dir="ltr">http://localhost</code>.</dd>
+    </dl>
+  </details>
+</section>
+
+<!-- ===================== TAB 1: TRANSCRIPTION ===================== -->
+<section id="tab-transcribe" class="tabpanel">
+
+  <label>محرك التفريغ <button type="button" class="help-link" data-help="transcribe" title="شرح">؟</button></label>
+  <div class="seg">
+    <label><input type="radio" name="engine" value="local" checked><span>محلي (المتصفح)</span></label>
+    <label><input type="radio" name="engine" value="server"><span>خادم Whisper في المؤسسة</span></label>
+  </div>
+
+  <div id="localPanel">
+    <div class="grid" style="margin-top:14px">
+      <div>
+        <label for="model">النموذج المحلي</label>
+        <select id="model">
+          <option value="onnx-community/whisper-small">Whisper Small — أسرع (~250 MB)</option>
+          <option value="onnx-community/whisper-large-v3-turbo" selected>Whisper Large-v3 Turbo — الأدق</option>
+        </select>
+      </div>
+      <div><button type="button" id="loadBtn" class="primary" style="width:100%">تحميل النموذج</button></div>
+    </div>
+    <progress id="loadProg" value="0" max="100" hidden style="margin-top:10px"></progress>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <div>
+      <label for="lang">لغة التسجيل</label>
+      <select id="lang">
+        <option value="arabic" selected>العربية</option>
+        <option value="english">English</option>
+        <option value="">تلقائي (لكل مقطع)</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="status" class="status">ابدأ بتحميل النموذج المحلي، أو اختر «خادم Whisper في المؤسسة» واضبط إعداداته أدناه.</div>
+
+  <div id="drop" class="drop disabled">
+    <b>اسحب ملف التسجيل هنا</b> أو اضغط للاختيار<br>
+    <small>m4a (المذكرات الصوتية) · mp3 · wav · webm · ogg · mp4</small>
+    <input type="file" id="file" accept="audio/*,video/mp4,.m4a,.mp3,.wav,.webm,.ogg,.mp4" hidden>
+  </div>
+  <audio id="player" controls hidden></audio>
+
+  <div id="runBox" hidden>
+    <progress id="runProg" value="0" max="100" style="margin-top:14px"></progress>
+    <div class="meta"><span id="runInfo"></span><span id="eta"></span></div>
+  </div>
+
+  <div class="actions">
+    <button type="button" id="stopBtn" class="danger" hidden>إيقاف</button>
+    <button type="button" id="copyBtn" disabled>نسخ النص</button>
+    <button type="button" id="txtBtn" disabled>تنزيل TXT</button>
+    <button type="button" id="srtBtn" disabled>تنزيل SRT</button>
+    <button type="button" id="loadTxtBtn">فتح نص جاهز (.txt)</button>
+    <input type="file" id="txtFile" accept=".txt,text/plain" hidden>
+  </div>
+
+  <div id="transcript" class="box" dir="auto" contenteditable="true"><span class="empty">سيظهر النص هنا أثناء التفريغ… (يمكنك تصحيحه يدوياً قبل إعداد المحضر)</span></div>
+
+</section>
+
+<!-- ===================== TAB 2: MINUTES OF MEETING ===================== -->
+<section id="tab-mom" class="tabpanel" hidden>
+  <h2>محضر الاجتماع (MOM) <button type="button" class="help-link" data-help="mom" title="شرح">؟</button></h2>
+  <p class="sub" id="momSrcInfo">يُعدّ المحضر من النص الموجود في تبويب «التفريغ» (بما في ذلك أي تصحيحات يدوية).</p>
+  <div class="grid">
+    <div style="grid-column:span 2"><label>عنوان الاجتماع</label><input type="text" id="mTitle" placeholder="اختياري"></div>
+    <div><label>التاريخ</label><input type="date" id="mDate"></div>
+    <div><label>لغة المحضر</label>
+      <select id="mLang"><option value="ar" selected>العربية</option><option value="en">English</option></select></div>
+    <div><label for="momProfile">قالب التعليمات <button type="button" class="help-link" data-help="templates" title="شرح">؟</button><button type="button" class="linkbtn" data-goto-sec="prompts" style="font-size:.8rem;font-weight:400">تعديل</button></label>
+      <select id="momProfile"></select></div>
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <div style="grid-column:1/-1"><label>الحضور (اختياري — اسم ودور في كل سطر أو مفصولين بفواصل)</label><textarea id="mAttendees" rows="2"></textarea></div>
+    <div style="grid-column:1/-1"><label>تعليمات إضافية (اختياري)</label><textarea id="mExtra" rows="2" placeholder="مثال: ركّز على القرارات المالية، واكتب المهام بصيغة رسمية."></textarea></div>
+  </div>
+  <div class="actions">
+    <button type="button" id="genBtn" class="primary">إنشاء المحضر</button>
+    <button type="button" id="genStop" class="danger" hidden>إيقاف</button>
+    <span id="genInfo" class="note"></span>
+  </div>
+
+  <div id="momWrap" hidden>
+    <div class="actions">
+      <button type="button" id="editToggle">تحرير يدوي</button>
+      <button type="button" id="undoBtn" disabled>تراجع عن آخر تعديل</button>
+      <button type="button" id="momCopy">نسخ</button>
+      <button type="button" id="momMd">تنزيل Markdown</button>
+      <button type="button" id="momDoc">تنزيل Word</button>
+      <button type="button" id="momPrint">طباعة / PDF</button>
+    </div>
+    <div id="mom" class="box" dir="auto" style="max-height:none"></div>
+    <textarea id="momEdit" dir="auto" hidden></textarea>
+
+    <h2 style="margin-top:18px">طلب تعديل على المحضر</h2>
+    <div class="row">
+      <textarea id="revInput" rows="2" placeholder="مثال: أضف عمود «الحالة» لجدول المهام، واجعل الملخص أقصر، وصحّح اسم المسؤول عن المهمة 3 إلى «أحمد»."></textarea>
+      <button type="button" id="revBtn" class="primary">تطبيق</button>
+    </div>
+    <ol id="history" class="history"></ol>
+  </div>
+</section>
+
+<!-- ===================== TAB 3: SETTINGS ===================== -->
+<section id="tab-settings" class="tabpanel" hidden>
+  <div class="set-head">
+    <div>
+      <h2 style="margin:0">الإعدادات <button type="button" class="help-link" data-help="settings" title="شرح">؟</button></h2>
+      <div class="note">تُحفظ التغييرات تلقائياً في هذا المتصفح.</div>
+    </div>
+    <span id="savePill" class="pill">✓ محفوظ</span>
+  </div>
+
+  <div class="set-layout">
+    <nav class="set-nav" aria-label="أقسام الإعدادات">
+      <button type="button" data-sec="whisper" class="active">🎙️ <span>خادم Whisper</span><i id="dotWhisper" class="dot"></i></button>
+      <button type="button" data-sec="llm">🧠 <span>نموذج اللغة</span><i id="dotLlm" class="dot"></i></button>
+      <button type="button" data-sec="prompts">📝 <span>التعليمات (Prompts)</span><i id="dotPrompts" class="dot mod" hidden></i></button>
+      <button type="button" data-sec="data">💾 <span>النسخ الاحتياطي</span></button>
+    </nav>
+
+    <div class="set-body">
+
+      <!-- ===== Whisper ===== -->
+      <div class="set-sec" data-sec="whisper">
+        <div class="card">
+          <div class="card-h">
+            <div><h3>خادم Whisper للتفريغ <button type="button" class="help-link" data-help="transcribe" title="شرح">؟</button></h3><p>يُستخدم عند اختيار «خادم Whisper» في تبويب التفريغ. أي خادم متوافق مع OpenAI (<code class="ltr">/audio/transcriptions</code>).</p></div>
+            <select class="preset" data-for="whisper" aria-label="قالب جاهز">
+              <option value="">قالب جاهز…</option>
+              <option value="https://api.openai.com/v1|whisper-1">OpenAI — whisper-1</option>
+              <option value="http://whisper.example.local:8000/v1|Systran/faster-whisper-large-v3">Speaches / faster-whisper</option>
+              <option value="http://whisper.example.local:8080/v1|whisper-large-v3">LocalAI</option>
+            </select>
+          </div>
+          <div class="fields">
+            <div class="f wide"><label for="whisperUrl">عنوان الخادم</label><input type="text" id="whisperUrl" class="ltr" placeholder="https://whisper.example.local/v1" spellcheck="false"><small>العنوان الأساسي وينتهي عادة بـ <code class="ltr">/v1</code></small></div>
+            <div class="f"><label for="whisperModel">اسم النموذج</label><input type="text" id="whisperModel" class="ltr" list="whisperModels" placeholder="whisper-large-v3" spellcheck="false"><datalist id="whisperModels"></datalist></div>
+            <div class="f"><label for="whisperKey">مفتاح API <em>اختياري</em></label><div class="pw"><input type="password" id="whisperKey" class="ltr" autocomplete="off"><button type="button" class="eye" data-eye="whisperKey" title="إظهار/إخفاء">👁</button></div></div>
+            <div class="f"><label for="whisperConc">طلبات متوازية</label><input type="number" id="whisperConc" min="1" max="8" value="3"><small>أسرع كلما زاد، إن احتمل الخادم</small></div>
+          </div>
+          <div class="card-f"><button type="button" id="testWhisper">اختبار الاتصال</button><span id="testWhisperRes" class="res"></span></div>
+        </div>
+      </div>
+
+      <!-- ===== LLM ===== -->
+      <div class="set-sec" data-sec="llm" hidden>
+        <div class="card">
+          <div class="card-h">
+            <div><h3>نموذج اللغة لإعداد المحضر <button type="button" class="help-link" data-help="trouble" title="شرح">؟</button></h3><p>أي خادم متوافق مع OpenAI (<code class="ltr">/chat/completions</code>) — vLLM، Ollama، TGI، LM Studio، OpenAI.</p></div>
+            <select class="preset" data-for="llm" aria-label="قالب جاهز">
+              <option value="">قالب جاهز…</option>
+              <option value="https://llm.example.local/v1|meta-llama/Llama-3.3-70B-Instruct">vLLM — Llama 3.3 70B</option>
+              <option value="http://localhost:11434/v1|llama3.3:70b">Ollama — llama3.3:70b</option>
+              <option value="https://api.openai.com/v1|gpt-4.1">OpenAI — gpt-4.1</option>
+            </select>
+          </div>
+          <div class="fields">
+            <div class="f wide"><label for="llmUrl">عنوان الخادم</label><input type="text" id="llmUrl" class="ltr" placeholder="https://llm.example.local/v1" spellcheck="false"></div>
+            <div class="f"><label for="llmModel">اسم النموذج</label><input type="text" id="llmModel" class="ltr" list="llmModels" placeholder="meta-llama/Llama-3.3-70B-Instruct" spellcheck="false"><datalist id="llmModels"></datalist><small>«اختبار الاتصال» يملأ قائمة النماذج المتاحة</small></div>
+            <div class="f"><label for="llmKey">مفتاح API <em>اختياري</em></label><div class="pw"><input type="password" id="llmKey" class="ltr" autocomplete="off"><button type="button" class="eye" data-eye="llmKey" title="إظهار/إخفاء">👁</button></div></div>
+          </div>
+          <div class="card-f"><button type="button" id="testLlm">اختبار الاتصال</button><span id="testLlmRes" class="res"></span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><div><h3>إعدادات التوليد</h3><p>القيم الافتراضية مناسبة لمعظم الحالات.</p></div></div>
+          <div class="fields">
+            <div class="f">
+              <label for="llmTemp">الإبداعية (Temperature) <output id="llmTempOut"></output></label>
+              <input type="range" id="llmTemp" min="0" max="1" step="0.1" value="0.2">
+              <small>منخفضة = التزام أكبر بالنص (موصى به للمحاضر)</small>
+            </div>
+            <div class="f">
+              <label for="llmMaxTokens">أقصى طول للرد (tokens)</label>
+              <input type="number" id="llmMaxTokens" min="256" step="256" value="4096">
+              <small>لنماذج التفكير (gpt-5، o-series) اجعله 16000+</small>
+            </div>
+            <div class="f">
+              <label for="llmChunk">حجم الجزء للنصوص الطويلة (حروف)</label>
+              <input type="number" id="llmChunk" min="4000" step="1000" value="40000">
+              <small>أطول من ذلك → يُلخَّص على أجزاء ثم يُدمج. قلّله إن كان سياق الخادم صغيراً</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Prompts ===== -->
+      <div class="set-sec" data-sec="prompts" hidden>
+        <div class="card">
+          <div class="card-h"><div><h3>قوالب التعليمات <button type="button" class="help-link" data-help="templates" title="شرح">؟</button></h3><p>كل قالب مجموعة كاملة من التعليمات (مثل «محضر رسمي»، «ملخص مختصر»، «اجتماع فني»). تختار القالب عند إعداد المحضر. تُستبدل المتغيرات تلقائياً عند الإرسال.</p></div></div>
+          <div class="prof-bar">
+            <label for="profileSel" style="margin:0">القالب</label>
+            <select id="profileSel"></select>
+            <button type="button" id="profNew">＋ جديد</button>
+            <button type="button" id="profDup">نسخ</button>
+            <button type="button" id="profRename">إعادة تسمية</button>
+            <button type="button" id="profDel" class="danger">حذف</button>
+          </div>
+
+          <div class="chips" id="promptChips" role="tablist">
+            <button type="button" data-p="mom" class="active">تعليمات المحضر</button>
+            <button type="button" data-p="tplAr">قالب المحضر — عربي</button>
+            <button type="button" data-p="tplEn">قالب المحضر — English</button>
+            <button type="button" data-p="notes">تلخيص الأجزاء</button>
+            <button type="button" data-p="revise">تعليمات التعديل</button>
+          </div>
+
+          <p id="promptDesc" class="note" style="margin:12px 0 8px"></p>
+          <div id="promptVars" class="vars"></div>
+          <textarea id="promptEditor" dir="auto" spellcheck="false"></textarea>
+          <div id="promptPreviewBox" hidden>
+            <div class="actions" style="margin:0 0 6px">
+              <b style="font-size:.9rem">النص النهائي بعد استبدال المتغيرات</b>
+              <select id="previewLang" style="width:auto"><option value="ar">لغة المحضر: العربية</option><option value="en">لغة المحضر: English</option></select>
+            </div>
+            <div id="previewNote" class="note"></div>
+            <pre id="previewText" dir="auto"></pre>
+          </div>
+          <div class="card-f">
+            <button type="button" id="promptReset">استعادة الافتراضي</button>
+            <button type="button" id="promptPreview">👁 معاينة ما يُرسل</button>
+            <span id="promptState" class="note"></span>
+            <span id="promptCount" class="note" style="margin-inline-start:auto"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Data ===== -->
+      <div class="set-sec" data-sec="data" hidden>
+        <div class="card">
+          <div class="card-h"><div><h3>مفاتيح API</h3><p>افتراضياً لا تُحفظ المفاتيح، وتُطلب في كل جلسة.</p></div></div>
+          <label class="toggle"><input type="checkbox" id="rememberKeys"><span></span> حفظ مفاتيح API في هذا المتصفح (localStorage)</label>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h3>تصدير واستيراد <button type="button" class="help-link" data-help="settings" title="شرح">؟</button></h3><p>شارك الإعدادات وقوالب التعليمات مع زملائك أو مديرك كملف JSON، ليستوردوه ويبدأوا مباشرة.</p></div></div>
+          <label class="toggle" style="margin-bottom:12px"><input type="checkbox" id="exportKeys"> تضمين مفاتيح API في الملف المُصدَّر</label>
+          <div class="callout" id="exportKeysWarn" style="margin-bottom:12px" hidden>🔑 سيحتوي الملف على المفاتيح بنص واضح — أي شخص يحصل على الملف يمكنه استخدامها. أرسله عبر قناة آمنة (وليس بريداً خارجياً)، واطلب من المستلم حذفه بعد الاستيراد.</div>
+          <div class="card-f" style="border:0;padding-top:0">
+            <button type="button" id="exportSettings">تصدير الإعدادات</button>
+            <button type="button" id="importSettings">استيراد من ملف</button>
+            <input type="file" id="importFile" accept=".json,application/json" hidden>
+            <button type="button" id="resetAll" class="danger" style="margin-inline-start:auto">استعادة كل الإعدادات الافتراضية</button>
+          </div>
+        </div>
+        <div class="callout">⚠️ يجب أن تسمح الخوادم بطلبات CORS من عنوان هذه الصفحة (مثل <code class="ltr">http://localhost:8000</code>). إذا ظهر «Failed to fetch» فهذا هو السبب غالباً.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== Local Whisper worker ===================== -->
+<script type="text/worker" id="workerSrc">
+  import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3';
+  env.allowLocalModels = false;
+  let asr = null;
+  self.onmessage = async (e) => {
+    const m = e.data;
+    try {
+      if (m.type === 'load') {
+        if (asr) { try { await asr.dispose(); } catch {} asr = null; }
+        const files = {};
+        asr = await pipeline('automatic-speech-recognition', m.model, {
+          device: m.device, dtype: m.dtype,
+          progress_callback: (p) => {
+            if (p.status === 'progress' && p.total) {
+              files[p.file] = [p.loaded, p.total];
+              let L = 0, T = 0; for (const [l, t] of Object.values(files)) { L += l; T += t; }
+              self.postMessage({ type: 'loadProgress', pct: (L / T) * 100 });
+            }
+          },
+        });
+        self.postMessage({ type: 'loaded' });
+      } else if (m.type === 'segment') {
+        const opts = { task: 'transcribe' };
+        if (m.language) opts.language = m.language;
+        const out = await asr(m.audio, opts);
+        self.postMessage({ type: 'segmentDone', id: m.id, text: (out.text || '').trim() });
+      }
+    } catch (err) {
+      self.postMessage({ type: 'error', id: m.id, msg: String(err && err.message || err) });
+    }
+  };
+</script>
+
+<script>
+(() => {
+  const SR = 16000;
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $('status');
+  const setStatus = (html, kind = '') => { statusEl.className = 'status ' + kind; statusEl.innerHTML = html; };
+  const esc = (s) => s.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  const joinUrl = (base, path) => base.trim().replace(/\/+$/, '') + path;
+  const authH = (key) => key ? { Authorization: 'Bearer ' + key } : {};
+
+  // ===================== Tabs =====================
+  function showTab(name) {
+    document.querySelectorAll('.tabs button').forEach(b => {
+      const on = b.dataset.tab === name; b.classList.toggle('active', on); b.setAttribute('aria-selected', on);
+      if (on) b.querySelector('.badge')?.remove();
+    });
+    document.querySelectorAll('.tabpanel').forEach(s => s.hidden = s.id !== 'tab-' + name);
+    try { localStorage.setItem('mom-tab', name); } catch {}
+  }
+  const badge = (name) => {
+    const b = document.querySelector(`.tabs button[data-tab=${name}]`);
+    if (!b.classList.contains('active') && !b.querySelector('.badge')) b.insertAdjacentHTML('beforeend', '<span class="badge"></span>');
+  };
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+  document.addEventListener('click', (e) => { const t = e.target.closest('[data-goto]'); if (t) showTab(t.dataset.goto); });
+
+  // ===================== Settings =====================
+  const FIELDS = ['whisperUrl','whisperModel','whisperConc','llmUrl','llmModel','llmTemp','llmMaxTokens','llmChunk'];
+  const KEYS = ['whisperKey','llmKey'];
+  const DEFAULT_FIELDS = { whisperConc: '3', llmTemp: '0.2', llmMaxTokens: '4096', llmChunk: '40000' };
+  const S = {};
+  function readSettings() {
+    for (const f of [...FIELDS, ...KEYS]) S[f] = $(f).value.trim();
+    S.whisperConc = Math.max(1, Math.min(8, parseInt(S.whisperConc) || 3));
+    S.llmChunk = Math.max(4000, parseInt(S.llmChunk) || 40000);
+    $('llmTempOut').textContent = (parseFloat(S.llmTemp) || 0).toFixed(1);
+    $('dotWhisper').className = 'dot' + (S.whisperUrl && S.whisperModel ? ' ok' : '');
+    $('dotLlm').className = 'dot' + (S.llmUrl && S.llmModel ? ' ok' : '');
+    return S;
+  }
+  function applySettings(saved) {
+    for (const f of FIELDS) $(f).value = saved[f] ?? DEFAULT_FIELDS[f] ?? '';
+    for (const k of KEYS) if (saved[k] != null) $(k).value = saved[k];
+    if (saved.rememberKeys != null) $('rememberKeys').checked = !!saved.rememberKeys;
+    if (saved.engine) { const r = document.querySelector(`input[name=engine][value=${saved.engine}]`); if (r) r.checked = true; }
+    readSettings();
+  }
+  function loadSaved() {
+    try { applySettings(JSON.parse(localStorage.getItem('mom-settings') || '{}')); } catch { readSettings(); }
+  }
+  function collectSettings(withKeys) {
+    const data = { rememberKeys: $('rememberKeys').checked, engine: engine() };
+    for (const f of FIELDS) data[f] = $(f).value.trim();
+    if (withKeys) for (const k of KEYS) data[k] = $(k).value.trim();
+    return data;
+  }
+  let saveTimer = null;
+  function scheduleSave() {
+    const pill = $('savePill'); pill.textContent = '… جارٍ الحفظ'; pill.classList.add('saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      try {
+        localStorage.setItem('mom-settings', JSON.stringify(collectSettings($('rememberKeys').checked)));
+        localStorage.setItem('mom-profiles', JSON.stringify(PR)); localStorage.removeItem('mom-prompts');
+        pill.textContent = '✓ محفوظ';
+      } catch { pill.textContent = '⚠️ تعذّر الحفظ في المتصفح'; }
+      pill.classList.remove('saving');
+    }, 400);
+  }
+  [...FIELDS, ...KEYS].forEach(f => $(f).addEventListener('input', () => { readSettings(); updateReady(); scheduleSave(); }));
+  $('rememberKeys').addEventListener('change', scheduleSave);
+
+  // section navigation inside the settings tab
+  function showSec(name) {
+    document.querySelectorAll('.set-nav button').forEach(b => b.classList.toggle('active', b.dataset.sec === name));
+    document.querySelectorAll('.set-sec').forEach(s => s.hidden = s.dataset.sec !== name);
+  }
+  document.querySelectorAll('.set-nav button').forEach(b => b.onclick = () => showSec(b.dataset.sec));
+  document.addEventListener('click', (e) => { const t = e.target.closest('[data-goto-sec]'); if (t) { showTab('settings'); showSec(t.dataset.gotoSec); } });
+
+  // presets
+  document.querySelectorAll('.preset').forEach(sel => sel.onchange = () => {
+    if (!sel.value) return;
+    const [url, model] = sel.value.split('|'), p = sel.dataset.for;
+    $(p + 'Url').value = url; $(p + 'Model').value = model;
+    sel.value = ''; readSettings(); updateReady(); scheduleSave();
+    $(p + 'Url').focus(); $(p + 'Url').select();
+  });
+
+  // show / hide keys
+  document.querySelectorAll('[data-eye]').forEach(b => b.onclick = () => {
+    const i = $(b.dataset.eye); i.type = i.type === 'password' ? 'text' : 'password';
+  });
+
+  // connection test with inline result + model list for autocompletion
+  async function testEndpoint(kind, btn) {
+    readSettings();
+    const url = S[kind + 'Url'], key = S[kind + 'Key'], res = $(kind === 'whisper' ? 'testWhisperRes' : 'testLlmRes');
+    const dot = $(kind === 'whisper' ? 'dotWhisper' : 'dotLlm');
+    btn.disabled = true; res.className = 'res'; res.textContent = '… جارٍ الاختبار';
+    try {
+      if (!url) throw new Error('أدخل عنوان الخادم أولاً');
+      const r = await fetch(joinUrl(url, '/models'), { headers: authH(key) });
+      if (r.status === 401 || r.status === 403) throw new Error(`HTTP ${r.status} — المفتاح غير صحيح أو مفقود`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json().catch(() => ({}));
+      const ids = (j.data || []).map(m => m.id).sort();
+      $(kind === 'whisper' ? 'whisperModels' : 'llmModels').innerHTML = ids.map(id => `<option value="${esc(id)}">`).join('');
+      const model = S[kind + 'Model'];
+      const found = !model || !ids.length || ids.includes(model);
+      res.className = 'res ' + (found ? 'ok' : 'err');
+      res.textContent = `✓ متصل — ${ids.length} نموذج متاح` + (found ? '' : ` · النموذج «${model}» غير موجود في القائمة`);
+      dot.className = 'dot ' + (found ? 'ok' : 'err');
+    } catch (e) {
+      res.className = 'res err';
+      res.textContent = '✗ ' + (/fetch/i.test(e.message) ? 'تعذّر الوصول — تحقق من العنوان أو إعدادات CORS' : e.message);
+      dot.className = 'dot err';
+    } finally { btn.disabled = false; }
+  }
+  $('testWhisper').onclick = (e) => testEndpoint('whisper', e.target);
+  $('testLlm').onclick = (e) => testEndpoint('llm', e.target);
+
+  // export / import / reset
+  $('exportKeys').onchange = () => $('exportKeysWarn').hidden = !$('exportKeys').checked;
+  $('exportSettings').onclick = () => {
+    const withKeys = $('exportKeys').checked;
+    if (withKeys && !KEYS.some(k => $(k).value.trim())) { alert('لا توجد مفاتيح API مُدخلة لتصديرها.'); return; }
+    if (withKeys && !confirm('سيحتوي الملف على مفاتيح API بنص واضح. شاركه فقط مع أشخاص موثوقين وعبر قناة آمنة. متابعة؟')) return;
+    download(withKeys ? 'meeting-assistant-settings-WITH-KEYS.json' : 'meeting-assistant-settings.json',
+      JSON.stringify({ app: 'meeting-assistant', version: 2, exportedAt: new Date().toISOString(), includesKeys: withKeys,
+                       settings: collectSettings(withKeys), profiles: PR }, null, 2), 'application/json', false);
+  };
+  $('importSettings').onclick = () => $('importFile').click();
+  $('importFile').onchange = async () => {
+    const f = $('importFile').files[0]; $('importFile').value = ''; if (!f) return;
+    let j, hasKeys = false;
+    try { j = JSON.parse(await f.text()); } catch (e) { alert('ملف غير صالح: ' + e.message); return; }
+    if (j.settings) {
+      hasKeys = KEYS.some(k => j.settings[k]);
+      if (hasKeys) j.settings.rememberKeys = true;   // keys came from a file the user chose to import → keep them
+      applySettings(j.settings);
+    }
+    if (j.profiles && Array.isArray(j.profiles.list)) {
+      for (const pr of j.profiles.list) { const i = PR.list.findIndex(x => x.id === pr.id); if (i >= 0) PR.list[i] = pr; else PR.list.push(pr); }
+      if (j.profiles.mom) PR.mom = j.profiles.mom;
+    } else if (j.prompts) PR.list[0].prompts = { ...DEFAULT_PROMPTS, ...j.prompts };   // v1 export
+    normalizeProfiles(); P = profile(PR.editing).prompts; renderProfileSelects(); renderPromptEditor();
+    readSettings(); updateReady(); scheduleSave();
+    alert('✓ تم استيراد الإعدادات وقوالب التعليمات.' + (hasKeys ? '\nتم أيضاً حفظ مفاتيح API في هذا المتصفح.' : ''));
+  };
+  $('resetAll').onclick = () => {
+    if (!confirm('سيتم حذف كل الإعدادات وقوالب التعليمات والمفاتيح المحفوظة واستعادة القيم الافتراضية. متابعة؟')) return;
+    try { ['mom-settings', 'mom-prompts', 'mom-profiles'].forEach(k => localStorage.removeItem(k)); } catch {}
+    for (const f of [...FIELDS, ...KEYS]) $(f).value = DEFAULT_FIELDS[f] ?? '';
+    $('rememberKeys').checked = false;
+    PR = { list: [{ id: 'default', name: 'الافتراضي', prompts: { ...DEFAULT_PROMPTS } }], editing: 'default', mom: 'default' };
+    P = PR.list[0].prompts; renderProfileSelects(); renderPromptEditor(); readSettings(); updateReady(); scheduleSave();
+  };
+
+  // ===================== Engine selection =====================
+  const engine = () => document.querySelector('input[name=engine]:checked').value;
+  let localReady = false, busy = false, pendingFile = null;
+  function updateReady() {
+    if (busy) return;
+    $('localPanel').hidden = engine() !== 'local';
+    const ready = engine() === 'local' ? localReady : !!(S.whisperUrl && S.whisperModel);
+    $('drop').classList.toggle('disabled', !ready);
+    if (engine() === 'server') {
+      setStatus(ready ? `✅ سيتم التفريغ على خادم المؤسسة: <span class="ltr">${esc(S.whisperUrl)}</span>. اختر ملف التسجيل.`
+                      : 'أدخل عنوان خادم Whisper واسم النموذج في تبويب <button type="button" class="linkbtn" data-goto="settings">⚙️ الإعدادات</button>.', ready ? 'ok' : '');
+    } else {
+      setStatus(localReady ? '✅ النموذج المحلي جاهز. اختر ملف التسجيل.' : 'اضغط «تحميل النموذج» (مرة واحدة فقط، ثم يُحفظ في المتصفح).', localReady ? 'ok' : '');
+    }
+    if (pendingFile) statusEl.insertAdjacentHTML('beforeend', ready
+      ? `<br><button type="button" class="linkbtn" id="runPending">▶ ابدأ تفريغ «${esc(pendingFile.name)}»</button>`
+      : `<br>📎 «${esc(pendingFile.name)}» بانتظار التفريغ — سيظهر زر البدء هنا عند الجاهزية.`);
+  }
+  document.querySelectorAll('input[name=engine]').forEach(r => r.onchange = () => { updateReady(); scheduleSave(); });
+  document.addEventListener('click', (e) => { if (e.target.id === 'runPending' && pendingFile) run(pendingFile); });
+
+  // ===================== Local Whisper (worker) =====================
+  const worker = new Worker(URL.createObjectURL(new Blob([$('workerSrc').textContent], { type: 'text/javascript' })), { type: 'module' });
+  const pending = new Map(); let onLoaded = null, onLoadErr = null, segId = 0;
+  worker.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === 'loadProgress') $('loadProg').value = m.pct;
+    else if (m.type === 'loaded') onLoaded && onLoaded();
+    else if (m.type === 'segmentDone') { pending.get(m.id)?.resolve(m.text); pending.delete(m.id); }
+    else if (m.type === 'error') {
+      if (pending.has(m.id)) { pending.get(m.id).reject(new Error(m.msg)); pending.delete(m.id); }
+      else onLoadErr && onLoadErr(new Error(m.msg));
+    }
+  };
+  const localTranscribe = (audio, language) => new Promise((resolve, reject) => {
+    const id = ++segId; pending.set(id, { resolve, reject });
+    worker.postMessage({ type: 'segment', id, audio, language }, [audio.buffer]);
+  });
+
+  $('loadBtn').onclick = async () => {
+    const loadBtn = $('loadBtn'), modelSel = $('model');
+    loadBtn.disabled = true; modelSel.disabled = true; localReady = false; $('drop').classList.add('disabled');
+    const adapter = navigator.gpu ? await navigator.gpu.requestAdapter().catch(() => null) : null;
+    const webgpu = !!adapter, isTurbo = modelSel.value.includes('turbo');
+    if (isTurbo && !webgpu && !confirm('WebGPU غير متوفر — نموذج Turbo سيكون بطيئاً جداً على المعالج. هل تريد المتابعة؟')) {
+      loadBtn.disabled = false; modelSel.disabled = false; return;
+    }
+    const dtype = !webgpu ? 'q8'
+      : isTurbo ? { encoder_model: adapter.features.has('shader-f16') ? 'fp16' : 'q4', decoder_model_merged: 'q4' }
+      : { encoder_model: 'fp32', decoder_model_merged: 'q4' };
+    setStatus(`جارٍ تحميل النموذج على ${webgpu ? 'كرت الشاشة (WebGPU)' : 'المعالج (WASM)'}… التحميل الأول قد يستغرق عدة دقائق.`);
+    $('loadProg').hidden = false; $('loadProg').value = 0;
+    try {
+      await new Promise((res, rej) => { onLoaded = res; onLoadErr = rej;
+        worker.postMessage({ type: 'load', model: modelSel.value, device: webgpu ? 'webgpu' : 'wasm', dtype }); });
+      localReady = true; loadBtn.textContent = 'إعادة التحميل';
+    } catch (e) { setStatus('فشل تحميل النموذج: ' + e.message, 'bad'); }
+    finally { $('loadProg').hidden = true; loadBtn.disabled = false; modelSel.disabled = false; if (localReady) updateReady(); }
+  };
+
+  // ===================== Server Whisper =====================
+  function toWav(x) {
+    const b = new ArrayBuffer(44 + x.length * 2), v = new DataView(b);
+    const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + x.length * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, SR, true); v.setUint32(28, SR * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, 'data'); v.setUint32(40, x.length * 2, true);
+    for (let i = 0, o = 44; i < x.length; i++, o += 2) { const s = Math.max(-1, Math.min(1, x[i])); v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+    return new Blob([b], { type: 'audio/wav' });
+  }
+  const LANG_CODE = { arabic: 'ar', english: 'en' };
+  async function serverTranscribe(audio, language) {
+    let lastErr;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const fd = new FormData();
+        fd.append('file', toWav(audio), 'segment.wav');
+        fd.append('model', S.whisperModel);
+        if (language && LANG_CODE[language]) fd.append('language', LANG_CODE[language]);
+        fd.append('response_format', 'json');
+        fd.append('temperature', '0');
+        const r = await fetch(joinUrl(S.whisperUrl, '/audio/transcriptions'), { method: 'POST', headers: authH(S.whisperKey), body: fd });
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 200)}`);
+        const ct = r.headers.get('content-type') || '';
+        return ct.includes('json') ? ((await r.json()).text || '').trim() : (await r.text()).trim();
+      } catch (e) { lastErr = e; await new Promise(r => setTimeout(r, 800 * (attempt + 1))); }
+    }
+    throw lastErr;
+  }
+
+  // ===================== Audio helpers =====================
+  async function decodeToMono16k(file) {
+    const ctx = new AudioContext({ sampleRate: SR });
+    try {
+      const buf = await ctx.decodeAudioData(await file.arrayBuffer());
+      if (buf.numberOfChannels === 1) return buf.getChannelData(0);
+      const out = new Float32Array(buf.length);
+      for (let c = 0; c < buf.numberOfChannels; c++) { const ch = buf.getChannelData(c); for (let i = 0; i < ch.length; i++) out[i] += ch[i] / buf.numberOfChannels; }
+      return out;
+    } finally { ctx.close(); }
+  }
+  function splitAtSilence(x, maxS = 28, minS = 15) {
+    const segs = [], win = Math.floor(0.1 * SR), N = x.length; let start = 0;
+    while (start < N) {
+      if (N - start <= maxS * SR) { segs.push([start, N]); break; }
+      let best = start + maxS * SR, bestE = Infinity;
+      for (let p = start + minS * SR; p + win <= start + maxS * SR; p += win) {
+        let e = 0; for (let i = p; i < p + win; i++) e += x[i] * x[i];
+        if (e < bestE) { bestE = e; best = p + (win >> 1); }
+      }
+      segs.push([start, best]); start = best;
+    }
+    return segs;
+  }
+  const rms = (x, a, b) => { let s = 0; for (let i = a; i < b; i++) s += x[i] * x[i]; return Math.sqrt(s / Math.max(1, b - a)); };
+  const HALLUCINATIONS = [/ترجمة\s*نانسي\s*قنقر/g, /اشتركوا?\s*في\s*القناة/g, /شكرا\s*(لكم\s*)?على\s*المشاهدة/g,
+    /Subtitles?\s+by.*$/gi, /Thanks?\s+for\s+watching\.?/gi, /\[?موسيقى\]?/g, /\[?Music\]?/gi];
+  const clean = (t) => { for (const r of HALLUCINATIONS) t = t.replace(r, ''); return t.replace(/\s+/g, ' ').trim(); };
+  const fmt = (sec, srt = false) => {
+    const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = Math.floor(sec % 60), p = (n, l = 2) => String(n).padStart(l, '0');
+    return srt ? `${p(h)}:${p(m)}:${p(s)},${p(Math.round((sec % 1) * 1000), 3)}` : `${p(h)}:${p(m)}:${p(s)}`;
+  };
+
+  // ===================== Transcription run =====================
+  const drop = $('drop'), fileInput = $('file'), player = $('player'), transcriptEl = $('transcript');
+  let results = [], stopFlag = false, baseName = 'transcript';
+  drop.onclick = () => fileInput.click();
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) run(e.dataTransfer.files[0]); };
+  fileInput.onchange = () => { if (fileInput.files[0]) run(fileInput.files[0]); fileInput.value = ''; };
+  $('stopBtn').onclick = () => { stopFlag = true; $('stopBtn').disabled = true; $('eta').textContent = 'سيتم الإيقاف بعد المقاطع الجارية…'; };
+
+  async function run(file) {
+    readSettings();
+    const useServer = engine() === 'server';
+    if (busy) return;
+    if (useServer ? !(S.whisperUrl && S.whisperModel) : !localReady) { pendingFile = file; updateReady(); return; }
+    pendingFile = null;
+    busy = true; stopFlag = false; results = [];
+    baseName = file.name.replace(/\.[^.]+$/, '') || 'transcript';
+    drop.classList.add('disabled'); $('loadBtn').disabled = true;
+    ['copyBtn','txtBtn','srtBtn'].forEach(id => $(id).disabled = true);
+    transcriptEl.innerHTML = ''; transcriptEl.contentEditable = 'false';
+    player.src = URL.createObjectURL(file); player.hidden = false;
+
+    setStatus(`جارٍ قراءة الملف «${esc(file.name)}»…`);
+    let audio;
+    try { audio = await decodeToMono16k(file); }
+    catch (e) { setStatus('تعذّر قراءة الملف الصوتي. جرّب تحويله إلى mp3 أو wav. (' + esc(e.message) + ')', 'bad'); return finish(); }
+
+    const duration = audio.length / SR, segs = splitAtSilence(audio);
+    const thr = Math.max(0.001, rms(audio, 0, audio.length) * 0.08);
+    const language = $('lang').value || null;
+    const transcribe = useServer ? serverTranscribe : localTranscribe;
+    const conc = useServer ? S.whisperConc : 1;
+
+    setStatus(`المدة: ${fmt(duration)} — ${segs.length} مقطع. جارٍ التفريغ ${useServer ? 'على خادم المؤسسة' : 'على جهازك'}…`, 'ok');
+    $('runBox').hidden = false; $('runProg').value = 0; $('stopBtn').hidden = false; $('stopBtn').disabled = false;
+    const t0 = performance.now();
+
+    // Results are rendered strictly in order even when several server requests run in parallel.
+    const done = new Array(segs.length); let next = 0, rendered = 0, doneSec = 0;
+    const flush = () => {
+      while (rendered < segs.length && done[rendered] !== undefined) {
+        const [a, b] = segs[rendered]; if (done[rendered]) addLine(a / SR, b / SR, done[rendered]); rendered++;
+      }
+    };
+    const workerLoop = async () => {
+      while (!stopFlag && next < segs.length) {
+        const i = next++, [a, b] = segs[i];
+        if (rms(audio, a, b) < thr) done[i] = '';
+        else {
+          try { done[i] = clean(await transcribe(audio.slice(a, b), language)); }
+          catch (e) { done[i] = `⚠️ خطأ في هذا المقطع: ${e.message}`; }
+        }
+        doneSec += (b - a) / SR; flush();
+        const el = (performance.now() - t0) / 1000;
+        $('runProg').value = (doneSec / duration) * 100;
+        $('runInfo').textContent = `${fmt(doneSec)} / ${fmt(duration)}  ·  السرعة: ${(doneSec / el).toFixed(1)}× الوقت الحقيقي`;
+        if (!stopFlag) $('eta').textContent = `المتبقي تقريباً: ${fmt(Math.max(0, (duration - doneSec) / (doneSec / el)))}`;
+      }
+    };
+    await Promise.all(Array.from({ length: conc }, workerLoop));
+    // mark unfinished slots so flush can't stall, then render what we have
+    for (let i = 0; i < segs.length; i++) if (done[i] === undefined) done[i] = '';
+    flush();
+
+    const total = (performance.now() - t0) / 1000;
+    if (results.length) badge('mom');
+    setStatus(stopFlag ? `تم الإيقاف. تم تفريغ جزء من التسجيل في ${fmt(total)}.` : `✅ اكتمل التفريغ: ${fmt(duration)} من الصوت في ${fmt(total)}. يمكنك تصحيح النص ثم إنشاء المحضر أدناه.`, 'ok');
+    $('eta').textContent = '';
+    finish();
+  }
+  function finish() {
+    busy = false; $('stopBtn').hidden = true; $('loadBtn').disabled = false;
+    transcriptEl.contentEditable = 'true';
+    const has = results.length > 0;
+    $('copyBtn').disabled = $('txtBtn').disabled = !has; $('srtBtn').disabled = !has;
+    updateReady();
+    if (busy === false && statusEl.className.includes('ok') && has) {} // keep final message
+  }
+  function addLine(start, end, text) {
+    results.push({ start, end, text });
+    const p = document.createElement('p'); p.className = 'line'; p.dir = 'auto';
+    const ts = document.createElement('span'); ts.className = 'ts'; ts.textContent = `[${fmt(start)}]`; ts.contentEditable = 'false';
+    ts.title = 'تشغيل من هنا'; ts.onclick = () => { player.currentTime = start; player.play(); };
+    p.append(ts, document.createTextNode(text)); transcriptEl.appendChild(p);
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+  }
+
+  // Exports (TXT uses the possibly hand-corrected text; SRT uses the original timings)
+  const transcriptText = () => transcriptEl.querySelector('.empty') ? '' : transcriptEl.innerText.trim();
+  const srt = () => results.map((r, i) => `${i + 1}\n${fmt(r.start, true)} --> ${fmt(r.end, true)}\n${r.text}\n`).join('\n');
+  const download = (name, text, type = 'text/plain;charset=utf-8', bom = true) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([(bom ? '﻿' : '') + text], { type }));
+    a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+  const flash = (btn, msg) => { const o = btn.textContent; btn.textContent = msg; setTimeout(() => btn.textContent = o, 1500); };
+  $('copyBtn').onclick = async (e) => { await navigator.clipboard.writeText(transcriptText()); flash(e.target, 'تم النسخ ✓'); };
+  $('txtBtn').onclick = () => download(baseName + '.txt', transcriptText());
+  $('srtBtn').onclick = () => download(baseName + '.srt', srt());
+  $('loadTxtBtn').onclick = () => $('txtFile').click();
+  $('txtFile').onchange = async () => {
+    const f = $('txtFile').files[0]; if (!f) return;
+    const text = (await f.text()).replace(/^﻿/, '');
+    baseName = f.name.replace(/\.[^.]+$/, ''); results = [];
+    transcriptEl.innerHTML = ''; text.split(/\r?\n/).forEach(l => { const p = document.createElement('p'); p.className = 'line'; p.dir = 'auto'; p.textContent = l; transcriptEl.appendChild(p); });
+    $('copyBtn').disabled = $('txtBtn').disabled = false; $('srtBtn').disabled = true;
+    $('txtFile').value = '';
+  };
+
+  // ===================== LLM (chat completions, streaming) =====================
+  let abortCtl = null;
+  // Different servers accept different parameter names:
+  //  - Llama on vLLM / Ollama / TGI: max_tokens + temperature
+  //  - Newer OpenAI models (gpt-5, o-series): max_completion_tokens, and some only allow the default temperature
+  // We start with the classic names and adapt automatically when the server rejects one (remembered per URL+model).
+  const paramMode = {};
+  function buildBody(messages, mode) {
+    const body = { model: S.llmModel, messages, stream: true };
+    const maxT = parseInt(S.llmMaxTokens) || 4096;
+    if (mode.maxCompletion) body.max_completion_tokens = maxT; else body.max_tokens = maxT;
+    if (!mode.noTemperature) body.temperature = parseFloat(S.llmTemp) || 0.2;
+    return body;
+  }
+  async function chat(messages, onText) {
+    readSettings();
+    if (!S.llmUrl || !S.llmModel) { showTab('settings'); throw new Error('أدخل عنوان خادم نموذج اللغة واسم النموذج في تبويب الإعدادات.'); }
+    abortCtl = new AbortController();
+    const key = S.llmUrl + '|' + S.llmModel;
+    const mode = paramMode[key] || (paramMode[key] = {});
+    let r;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      r = await fetch(joinUrl(S.llmUrl, '/chat/completions'), {
+        method: 'POST', signal: abortCtl.signal,
+        headers: { 'Content-Type': 'application/json', ...authH(S.llmKey) },
+        body: JSON.stringify(buildBody(messages, mode)),
+      });
+      if (r.ok) break;
+      const errText = await r.text();
+      if (r.status === 400 && /max_tokens/.test(errText) && /max_completion_tokens/.test(errText) && !mode.maxCompletion) { mode.maxCompletion = true; continue; }
+      if (r.status === 400 && /temperature/i.test(errText) && /(unsupported|not support|only the default)/i.test(errText) && !mode.noTemperature) { mode.noTemperature = true; continue; }
+      throw new Error(`HTTP ${r.status}: ${errText.slice(0, 300)}`);
+    }
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if ((r.headers.get('content-type') || '').includes('application/json')) {   // server ignored stream:true
+      const t = (await r.json()).choices?.[0]?.message?.content || ''; onText && onText(t); return t;
+    }
+    const reader = r.body.getReader(), dec = new TextDecoder(); let buf = '', full = '';
+    for (;;) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim(); if (data === '[DONE]') return full;
+        try { const j = JSON.parse(data); const d = j.choices?.[0]?.delta?.content ?? ''; if (d) { full += d; onText && onText(full); } } catch {}
+      }
+    }
+    return full;
+  }
+  const stripFences = (t) => t.replace(/^\s*```(?:markdown|md)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+
+  // ===================== Prompts (editable in Settings → Prompts) =====================
+  const DEFAULT_PROMPTS = {
+    mom: `You are an expert executive secretary who writes official Minutes of Meeting (MOM) for a government organization.
+Rules:
+- Write the entire document in {{language}}, even if the transcript mixes languages or dialects.
+- Use ONLY information found in the provided material. Never invent names, numbers, dates, decisions or owners. If something is unknown, write "{{unknown}}".
+- The transcript is machine-generated and may contain recognition errors; infer the intended meaning carefully but do not guess facts.
+- Be concise and factual. Group the discussion by topic, not chronologically, unless chronology matters.
+- Every action item must have an owner and due date if mentioned; otherwise "{{unknown}}".
+- Output Markdown only, following this structure (you may omit a section only if it is truly empty, writing "{{unknown}}" is preferred):
+
+{{template}}`,
+    tplAr: `# محضر اجتماع: <العنوان>
+**التاريخ:** … | **الوقت/المدة:** … | **المكان/الوسيلة:** …
+**الحضور:** …
+
+## جدول الأعمال
+1. …
+
+## ملخص المناقشات
+### <المحور الأول>
+- …
+
+## القرارات
+1. …
+
+## المهام والإجراءات
+| # | المهمة | المسؤول | الموعد النهائي |
+|---|---|---|---|
+| 1 | … | … | … |
+
+## نقاط معلقة / تحتاج متابعة
+- …
+
+## الاجتماع القادم
+…`,
+    tplEn: `# Minutes of Meeting: <Title>
+**Date:** … | **Time/Duration:** … | **Location/Medium:** …
+**Attendees:** …
+
+## Agenda
+1. …
+
+## Discussion Summary
+### <Topic 1>
+- …
+
+## Decisions
+1. …
+
+## Action Items
+| # | Action | Owner | Due date |
+|---|---|---|---|
+| 1 | … | … | … |
+
+## Open Issues / Follow-ups
+- …
+
+## Next Meeting
+…`,
+    notes: `You extract detailed meeting notes from one part of a long, machine-generated meeting transcript.
+Write in {{language}}. Use only what is in this part; never invent facts.
+Output Markdown bullets under these headings: Topics discussed (with key points and who said them if identifiable), Decisions, Action items (task / owner / due date), Open questions, Other facts (dates, figures, names). Keep [hh:mm:ss] timestamps for important points.`,
+    revise: `You revise an existing Minutes of Meeting document according to the user's change request.
+- Apply exactly the requested changes and keep everything else unchanged.
+- Keep the document in {{language}} unless the user asks otherwise.
+- Do not invent facts; use the source material provided for reference if the change needs more detail.
+- Return the COMPLETE updated document in Markdown only, with no commentary before or after it.`,
+  };
+  const PROMPT_INFO = {
+    mom:    { desc: 'التعليمات الرئيسية (system prompt) لكتابة المحضر. يُدرج قالب المحضر مكان {{template}} حسب لغة المحضر المختارة.', vars: ['language','unknown','template'] },
+    tplAr:  { desc: 'هيكل المحضر عند اختيار العربية. يُدرج داخل تعليمات المحضر مكان {{template}}. عدّل العناوين والجداول كما تريد.', vars: [] },
+    tplEn:  { desc: 'Structure of the minutes when English is selected. Inserted into the main prompt in place of {{template}}.', vars: [] },
+    notes:  { desc: 'تُستخدم فقط للاجتماعات الطويلة: يُلخَّص كل جزء من النص بهذه التعليمات، ثم يُكتب المحضر من الملخصات.', vars: ['language','unknown'] },
+    revise: { desc: 'تُستخدم عند «طلب تعديل على المحضر». يُرسل معها المحضر الحالي وطلبك.', vars: ['language','unknown'] },
+  };
+  const VAR_INFO = { language: 'لغة المحضر', unknown: 'كلمة «غير محدد»', template: 'قالب المحضر' };
+
+  // ----- prompt profiles: named, complete sets of prompts -----
+  let PR = { list: [{ id: 'default', name: 'الافتراضي', prompts: { ...DEFAULT_PROMPTS } }], editing: 'default', mom: 'default' };
+  try {
+    const saved = JSON.parse(localStorage.getItem('mom-profiles') || 'null');
+    if (saved && Array.isArray(saved.list) && saved.list.length) PR = saved;
+    else PR.list[0].prompts = { ...DEFAULT_PROMPTS, ...JSON.parse(localStorage.getItem('mom-prompts') || '{}') }; // migrate older version
+  } catch {}
+  function normalizeProfiles() {
+    PR.list = PR.list.filter(p => p && p.id);
+    if (!PR.list.length) PR.list = [{ id: 'default', name: 'الافتراضي', prompts: {} }];
+    for (const p of PR.list) { p.name = p.name || 'بدون اسم'; p.prompts = { ...DEFAULT_PROMPTS, ...(p.prompts || {}) }; }
+    if (!PR.list.some(p => p.id === PR.editing)) PR.editing = PR.list[0].id;
+    if (!PR.list.some(p => p.id === PR.mom)) PR.mom = PR.list[0].id;
+  }
+  normalizeProfiles();
+  const profile = (id) => PR.list.find(p => p.id === id) || PR.list[0];
+  const newId = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  let P = profile(PR.editing).prompts;   // the set currently open in the Settings editor
+
+  const langName = (l) => l === 'ar' ? 'Modern Standard Arabic (formal, official register)' : 'English (formal business register)';
+  const unknownWord = (l) => l === 'ar' ? 'غير محدد' : 'Not specified';
+  const fill = (text, l, pr) => text
+    .replaceAll('{{template}}', l === 'ar' ? pr.tplAr : pr.tplEn)
+    .replaceAll('{{language}}', langName(l))
+    .replaceAll('{{unknown}}', unknownWord(l));
+  const systemMom = (l, id) => { const pr = profile(id).prompts; return fill(pr.mom, l, pr); };
+  const systemNotes = (l, id) => { const pr = profile(id).prompts; return fill(pr.notes, l, pr); };
+  const systemRevise = (l, id) => { const pr = profile(id).prompts; return fill(pr.revise, l, pr); };
+
+  function renderProfileSelects() {
+    const opts = PR.list.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    $('profileSel').innerHTML = opts; $('profileSel').value = PR.editing;
+    $('momProfile').innerHTML = opts; $('momProfile').value = PR.mom;
+    $('profDel').disabled = PR.list.length <= 1;
+  }
+  function selectEditing(id) { PR.editing = id; P = profile(id).prompts; renderProfileSelects(); renderPromptEditor(); scheduleSave(); }
+  const askName = (msg, def) => { const n = window.prompt(msg, def); return n && n.trim() ? n.trim() : null; };
+  $('profileSel').onchange = () => selectEditing($('profileSel').value);
+  $('momProfile').onchange = () => { PR.mom = $('momProfile').value; scheduleSave(); };
+  $('profNew').onclick = () => { const name = askName('اسم القالب الجديد (يبدأ بالتعليمات الافتراضية):', 'قالب جديد'); if (!name) return;
+    const pr = { id: newId(), name, prompts: { ...DEFAULT_PROMPTS } }; PR.list.push(pr); selectEditing(pr.id); };
+  $('profDup').onclick = () => { const cur = profile(PR.editing), name = askName('اسم النسخة:', cur.name + ' (نسخة)'); if (!name) return;
+    const pr = { id: newId(), name, prompts: { ...cur.prompts } }; PR.list.push(pr); selectEditing(pr.id); };
+  $('profRename').onclick = () => { const cur = profile(PR.editing), name = askName('الاسم الجديد:', cur.name); if (!name) return;
+    cur.name = name; renderProfileSelects(); scheduleSave(); };
+  $('profDel').onclick = () => {
+    if (PR.list.length <= 1) return;
+    const cur = profile(PR.editing); if (!confirm(`حذف القالب «${cur.name}»؟`)) return;
+    PR.list = PR.list.filter(p => p !== cur); if (PR.mom === cur.id) PR.mom = PR.list[0].id;
+    selectEditing(PR.list[0].id);
+  };
+
+  // editor
+  let curPrompt = 'mom';
+  const editor = $('promptEditor');
+  function renderPromptEditor() {
+    document.querySelectorAll('#promptChips button').forEach(b => {
+      b.classList.toggle('active', b.dataset.p === curPrompt);
+      b.classList.toggle('mod', P[b.dataset.p] !== DEFAULT_PROMPTS[b.dataset.p]);
+    });
+    const info = PROMPT_INFO[curPrompt];
+    $('promptDesc').textContent = info.desc;
+    $('promptVars').innerHTML = info.vars.map(v => `<button type="button" data-var="${v}" title="إدراج: ${VAR_INFO[v]}">{{${v}}}</button>`).join('')
+      + (info.vars.length ? '<span class="note" style="align-self:center">← اضغط لإدراج متغير عند المؤشر</span>' : '');
+    editor.value = P[curPrompt];
+    editor.dir = curPrompt === 'tplAr' ? 'rtl' : 'ltr';
+    updatePromptState();
+  }
+  function updatePromptState() {
+    const modified = P[curPrompt] !== DEFAULT_PROMPTS[curPrompt];
+    $('promptState').textContent = modified ? '● معدّلة عن الافتراضي' : 'الافتراضي';
+    $('promptState').style.color = modified ? 'var(--warn)' : '';
+    $('promptReset').disabled = !modified;
+    $('promptCount').textContent = `${editor.value.length.toLocaleString('ar')} حرف`;
+    document.querySelector(`#promptChips button[data-p=${curPrompt}]`).classList.toggle('mod', modified);
+    $('dotPrompts').hidden = !(PR.list.length > 1 || PR.list.some(p => Object.keys(DEFAULT_PROMPTS).some(k => p.prompts[k] !== DEFAULT_PROMPTS[k])));
+    const missing = PROMPT_INFO[curPrompt].vars.filter(v => v === 'template' && !editor.value.includes('{{template}}'));
+    if (missing.length) $('promptState').textContent += ' · ⚠️ لا يحتوي على {{template}} — لن يُستخدم القالب';
+  }
+  document.querySelectorAll('#promptChips button').forEach(b => b.onclick = () => { curPrompt = b.dataset.p; renderPromptEditor(); });
+  editor.addEventListener('input', () => { P[curPrompt] = editor.value; updatePromptState(); scheduleSave(); });
+  $('promptVars').addEventListener('click', (e) => {
+    const v = e.target.closest('[data-var]'); if (!v) return;
+    const tok = `{{${v.dataset.var}}}`, s = editor.selectionStart, en = editor.selectionEnd;
+    editor.setRangeText(tok, s, en, 'end'); editor.focus();
+    editor.dispatchEvent(new Event('input'));
+  });
+  $('promptReset').onclick = () => {
+    if (!confirm('استعادة النص الافتراضي لهذه التعليمات؟')) return;
+    P[curPrompt] = DEFAULT_PROMPTS[curPrompt]; renderPromptEditor(); scheduleSave();
+  };
+
+  function meetingInfo() {
+    const l = $('mLang').value;
+    const parts = [];
+    if ($('mTitle').value.trim()) parts.push(`Meeting title: ${$('mTitle').value.trim()}`);
+    if ($('mDate').value) parts.push(`Meeting date: ${$('mDate').value}`);
+    if ($('mAttendees').value.trim()) parts.push(`Attendees (as provided by the user):\n${$('mAttendees').value.trim()}`);
+    if ($('mExtra').value.trim()) parts.push(`Additional instructions from the user:\n${$('mExtra').value.trim()}`);
+    return { l, info: parts.join('\n\n') };
+  }
+  function chunkText(text, size) {
+    const lines = text.split('\n'), chunks = []; let cur = '';
+    for (const ln of lines) {
+      if (cur.length + ln.length + 1 > size && cur) { chunks.push(cur); cur = ''; }
+      cur += ln + '\n';
+    }
+    if (cur.trim()) chunks.push(cur);
+    return chunks;
+  }
+
+  // ===================== MOM generation & revisions =====================
+  let momMd = '', versions = [], momSource = '', momLang = 'ar', momProfileId = 'default';
+  const momEl = $('mom'), momEdit = $('momEdit');
+  const render = (md) => {
+    momEl.innerHTML = (window.marked && window.DOMPurify)
+      ? DOMPurify.sanitize(marked.parse(md)) : `<pre style="white-space:pre-wrap">${esc(md)}</pre>`;
+  };
+  const setGenBusy = (on, info = '') => {
+    $('genBtn').disabled = on; $('revBtn').disabled = on; $('genStop').hidden = !on; $('genInfo').textContent = info;
+  };
+  $('genStop').onclick = () => abortCtl && abortCtl.abort();
+
+  $('genBtn').onclick = async () => {
+    const transcript = transcriptText();
+    if (!transcript) { alert('لا يوجد نص. قم بتفريغ تسجيل أو افتح ملف نص في تبويب «التفريغ» أولاً.'); showTab('transcribe'); return; }
+    readSettings();
+    const { l, info } = meetingInfo(); momLang = l;
+    const pid = $('momProfile').value || PR.mom; momProfileId = pid;
+    $('momWrap').hidden = false; momEdit.hidden = true; momEl.hidden = false; $('editToggle').textContent = 'تحرير يدوي';
+    momEl.innerHTML = '<span class="empty">جارٍ الإعداد…</span>';
+    try {
+      let source = transcript;
+      const chunks = chunkText(transcript, S.llmChunk);
+      if (chunks.length > 1) {
+        const notes = [];
+        for (let i = 0; i < chunks.length; i++) {
+          setGenBusy(true, `النص طويل — تلخيص الجزء ${i + 1} من ${chunks.length}…`);
+          notes.push(`### Part ${i + 1} of ${chunks.length}\n` + await chat([
+            { role: 'system', content: systemNotes(l, pid) },
+            { role: 'user', content: `Part ${i + 1} of ${chunks.length} of the transcript:\n\n<transcript>\n${chunks[i]}\n</transcript>` },
+          ], (t) => { momEl.innerHTML = `<pre style="white-space:pre-wrap" dir="auto">${esc(t)}</pre>`; }));
+        }
+        source = notes.join('\n\n');
+      }
+      momSource = source;
+      setGenBusy(true, 'جارٍ كتابة المحضر…');
+      const sourceLabel = chunks.length > 1 ? 'Notes extracted from the full meeting transcript' : 'Meeting transcript';
+      const md = stripFences(await chat([
+        { role: 'system', content: systemMom(l, pid) },
+        { role: 'user', content: `${info ? info + '\n\n' : ''}${sourceLabel}:\n\n<source>\n${source}\n</source>\n\nWrite the Minutes of Meeting now.` },
+      ], (t) => render(stripFences(t))));
+      if (!md) throw new Error('لم يُرجع النموذج أي نص.');
+      versions = []; momMd = md; render(md);
+      $('history').innerHTML = ''; $('undoBtn').disabled = true;
+      setGenBusy(false, `✅ تم إنشاء المحضر (قالب: ${profile(pid).name}).`);
+    } catch (e) {
+      setGenBusy(false, '');
+      if (e.name === 'AbortError') { $('genInfo').textContent = 'تم الإيقاف.'; if (momMd) render(momMd); }
+      else { momEl.innerHTML = `<div class="status bad">فشل الإنشاء: ${esc(e.message)}${e.message.includes('fetch') ? '<br>تحقق من العنوان وإعدادات CORS على الخادم.' : ''}</div>`; }
+    }
+  };
+
+  async function applyRevision() {
+    const req = $('revInput').value.trim();
+    if (!req || !momMd) return;
+    if (!momEdit.hidden) { momMd = momEdit.value; } // take manual edits into account
+    readSettings();
+    const prev = momMd;
+    // include source material for reference only if it fits the configured chunk size
+    const ref = momSource && momSource.length <= S.llmChunk ? `Source material (for reference):\n<source>\n${momSource}\n</source>\n\n` : '';
+    setGenBusy(true, 'جارٍ تطبيق التعديل…');
+    momEdit.hidden = true; momEl.hidden = false; $('editToggle').textContent = 'تحرير يدوي';
+    try {
+      const md = stripFences(await chat([
+        { role: 'system', content: systemRevise(momLang, momProfileId) },
+        { role: 'user', content: `${ref}Current Minutes of Meeting:\n<minutes>\n${prev}\n</minutes>\n\nChange request:\n${req}` },
+      ], (t) => render(stripFences(t))));
+      if (!md) throw new Error('لم يُرجع النموذج أي نص.');
+      versions.push(prev); momMd = md; render(md);
+      const li = document.createElement('li'); li.textContent = req; $('history').appendChild(li);
+      $('revInput').value = ''; $('undoBtn').disabled = false;
+      setGenBusy(false, '✅ تم تطبيق التعديل.');
+    } catch (e) {
+      momMd = prev; render(prev); setGenBusy(false, e.name === 'AbortError' ? 'تم الإيقاف.' : 'فشل التعديل: ' + e.message);
+    }
+  }
+  $('revBtn').onclick = applyRevision;
+  $('revInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) applyRevision(); });
+
+  $('undoBtn').onclick = () => {
+    if (!versions.length) return;
+    momMd = versions.pop(); render(momMd); momEdit.value = momMd;
+    $('history').lastElementChild?.remove(); $('undoBtn').disabled = !versions.length;
+  };
+  $('editToggle').onclick = () => {
+    if (momEdit.hidden) { momEdit.value = momMd; momEdit.hidden = false; momEl.hidden = true; $('editToggle').textContent = 'حفظ التحرير'; }
+    else {
+      if (momEdit.value !== momMd) { versions.push(momMd); momMd = momEdit.value; $('undoBtn').disabled = false;
+        const li = document.createElement('li'); li.textContent = '(تحرير يدوي)'; $('history').appendChild(li); }
+      render(momMd); momEdit.hidden = true; momEl.hidden = false; $('editToggle').textContent = 'تحرير يدوي';
+    }
+  };
+
+  // Exports
+  const momName = () => ($('mTitle').value.trim() || 'محضر-اجتماع').replace(/[\\/:*?"<>|]+/g, '-');
+  const momHtmlDoc = () => {
+    const dir = momLang === 'ar' ? 'rtl' : 'ltr';
+    return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(momName())}</title>
+<style>body{direction:${dir};font-family:Arial,"Segoe UI",sans-serif;font-size:12pt;line-height:1.6}
+table{border-collapse:collapse;width:100%}th,td{border:1px solid #888;padding:5px 7px;vertical-align:top}th{background:#eee}
+h1{font-size:18pt}h2{font-size:14pt;border-bottom:1px solid #aaa;padding-bottom:3px}</style></head>
+<body dir="${dir}">${momEl.innerHTML}</body></html>`;
+  };
+  $('momCopy').onclick = async (e) => { await navigator.clipboard.writeText(momMd); flash(e.target, 'تم النسخ ✓'); };
+  $('momMd').onclick = () => download(momName() + '.md', momMd);
+  $('momDoc').onclick = () => download(momName() + '.doc', momHtmlDoc(), 'application/msword', true);
+  $('momPrint').onclick = () => {
+    const w = window.open('', '_blank'); if (!w) return;
+    w.document.write(momHtmlDoc()); w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
+  };
+
+  // ===================== Browser recording =====================
+  // Chunks are written to IndexedDB every 5 s, so a crash/close never loses more than a few seconds.
+  const IDB = (() => {
+    let dbp;
+    const open = () => dbp || (dbp = new Promise((res, rej) => {
+      const r = indexedDB.open('meeting-recorder', 1);
+      r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('chunks', { autoIncrement: true }); d.createObjectStore('meta'); };
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    }));
+    const tx = async (store, mode, fn) => {
+      const d = await open();
+      return new Promise((res, rej) => {
+        const t = d.transaction(store, mode), out = fn(t.objectStore(store));
+        t.oncomplete = () => res(out instanceof IDBRequest ? out.result : out);
+        t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+      });
+    };
+    return {
+      addChunk: (blob) => tx('chunks', 'readwrite', s => s.add(blob)),
+      allChunks: () => tx('chunks', 'readonly', s => s.getAll()),
+      setMeta: (m) => tx('meta', 'readwrite', s => s.put(m, 'current')),
+      getMeta: () => tx('meta', 'readonly', s => s.get('current')),
+      clear: async () => { await tx('chunks', 'readwrite', s => s.clear()); await tx('meta', 'readwrite', s => s.clear()); },
+    };
+  })();
+
+  let recStream = null, recMR = null, recCtx = null, recRAF = 0, wakeLock = null, recTimer = 0;
+  let recState = 'idle', recAccum = 0, recSegStart = 0, recBytes = 0, recBlob = null, recMeta = null, lastSave = Promise.resolve();
+  const recElapsed = () => recAccum + (recState === 'recording' ? Date.now() - recSegStart : 0);
+  const defaultRecName = (t = Date.now()) => { const d = new Date(t), p = n => String(n).padStart(2, '0');
+    return `اجتماع ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}-${p(d.getMinutes())}`; };
+  const recExt = () => (recMeta?.mime || '').includes('mp4') ? '.m4a' : '.webm';
+
+  async function listMics() {
+    try {
+      const ds = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput' && d.deviceId && d.deviceId !== 'default');
+      const sel = $('micSel'), cur = sel.value;
+      sel.innerHTML = '<option value="">الميكروفون الافتراضي</option>' +
+        ds.map((d, i) => `<option value="${esc(d.deviceId)}">${esc(d.label || 'ميكروفون ' + (i + 1))}</option>`).join('');
+      sel.value = cur;
+    } catch {}
+  }
+  navigator.mediaDevices?.addEventListener?.('devicechange', listMics);
+
+  async function requestWake() { try { if ('wakeLock' in navigator && recState !== 'idle') wakeLock = await navigator.wakeLock.request('screen'); } catch {} }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') requestWake(); });
+  window.addEventListener('beforeunload', (e) => { if (recState !== 'idle') { e.preventDefault(); e.returnValue = ''; } });
+
+  function setRecUI() {
+    const on = recState !== 'idle';
+    $('recBtn').classList.toggle('on', on);
+    $('recBtn').title = on ? 'إنهاء التسجيل' : 'بدء التسجيل';
+    $('recPause').hidden = !on;
+    $('recPause').textContent = recState === 'paused' ? '▶ متابعة' : '⏸ إيقاف مؤقت';
+    ['micSel', 'recQuality', 'recClean'].forEach(id => $(id).disabled = on);
+    const tabBtn = document.querySelector('.tabs button[data-tab=record]');
+    tabBtn.querySelector('.rec-live')?.remove();
+    if (on) tabBtn.insertAdjacentHTML('beforeend', '<span class="rec-live" title="جارٍ التسجيل">●</span>');
+  }
+  function tick() {
+    $('recTime').textContent = fmt(recElapsed() / 1000);
+    $('recState').textContent = recState === 'paused' ? '⏸ متوقف مؤقتاً'
+      : `🔴 جارٍ التسجيل — ${(recBytes / 1048576).toFixed(1)} MB محفوظة على جهازك`;
+  }
+  function meter(stream) {
+    try {
+      recCtx = new AudioContext();
+      const an = recCtx.createAnalyser(); an.fftSize = 1024;
+      recCtx.createMediaStreamSource(stream).connect(an);
+      const buf = new Float32Array(an.fftSize);
+      const loop = () => {
+        an.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v;
+        $('recLevel').style.width = Math.min(100, Math.sqrt(s / buf.length) * 400) + '%';
+        recRAF = requestAnimationFrame(loop);
+      };
+      loop();
+    } catch {}
+  }
+
+  async function startRec() {
+    if (recBlob && !confirm('سيتم استبدال التسجيل الحالي بتسجيل جديد. نزّله أولاً إن كنت تحتاجه. متابعة؟')) return;
+    const clean = $('recClean').checked;
+    try {
+      recStream = await navigator.mediaDevices.getUserMedia({ audio: {
+        deviceId: $('micSel').value ? { exact: $('micSel').value } : undefined,
+        echoCancellation: clean, noiseSuppression: clean, autoGainControl: true, channelCount: 1 } });
+    } catch (e) { $('recState').textContent = '❌ تعذّر الوصول إلى الميكروفون: ' + e.message; return; }
+    listMics();
+    await IDB.clear(); recBlob = null; $('recResult').hidden = true; $('recRecover').hidden = true;
+    const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find(m => MediaRecorder.isTypeSupported(m));
+    recMR = new MediaRecorder(recStream, { mimeType: mime, audioBitsPerSecond: +$('recQuality').value });
+    recMeta = { mime: recMR.mimeType || mime || 'audio/webm', startedAt: Date.now(), elapsed: 0, done: false, name: defaultRecName() };
+    await IDB.setMeta(recMeta);
+    recBytes = 0; lastSave = Promise.resolve();
+    recMR.ondataavailable = (e) => {
+      if (!e.data.size) return;
+      recBytes += e.data.size;
+      lastSave = lastSave.then(() => IDB.addChunk(e.data))
+        .then(() => { recMeta.elapsed = recElapsed(); return IDB.setMeta(recMeta); })
+        .catch(err => { $('recState').textContent = '⚠️ تعذّر الحفظ على الجهاز: ' + err.message; });
+    };
+    recMR.onstop = finishRec;
+    recMR.start(5000);
+    recState = 'recording'; recAccum = 0; recSegStart = Date.now();
+    recTimer = setInterval(tick, 500); tick();
+    meter(recStream); requestWake(); setRecUI();
+  }
+  function pauseRec() {
+    if (recState === 'recording') { recMR.pause(); recAccum += Date.now() - recSegStart; recState = 'paused'; }
+    else if (recState === 'paused') { recMR.resume(); recSegStart = Date.now(); recState = 'recording'; }
+    setRecUI(); tick();
+  }
+  function stopRec() {
+    if (recState === 'idle') return;
+    if (recState === 'recording') recAccum += Date.now() - recSegStart;
+    recState = 'idle';
+    try { recMR.stop(); } catch {}
+    recStream.getTracks().forEach(t => t.stop());
+    clearInterval(recTimer); cancelAnimationFrame(recRAF); try { recCtx.close(); } catch {}
+    $('recLevel').style.width = '0';
+    try { wakeLock?.release(); } catch {} wakeLock = null;
+    $('recTime').textContent = fmt(recAccum / 1000);
+    $('recState').textContent = '⏳ جارٍ إنهاء الحفظ…';
+    setRecUI();
+  }
+  async function finishRec() {
+    await lastSave;
+    recMeta.elapsed = recAccum; recMeta.done = true;
+    await IDB.setMeta(recMeta);
+    $('recState').textContent = '✓ تم حفظ التسجيل على جهازك.';
+    await showRecResult();
+  }
+  async function showRecResult() {
+    const meta = await IDB.getMeta(); if (!meta) return;
+    const chunks = await IDB.allChunks(); if (!chunks.length) return;
+    recMeta = meta;
+    recBlob = new Blob(chunks, { type: meta.mime.split(';')[0] });
+    $('recPlayer').src = URL.createObjectURL(recBlob);
+    $('recName').value = meta.name || defaultRecName(meta.startedAt);
+    $('recInfo').textContent = `المدة: ${fmt(meta.elapsed / 1000)} · الحجم: ${(recBlob.size / 1048576).toFixed(1)} MB · ${new Date(meta.startedAt).toLocaleString('ar')}`;
+    $('recResult').hidden = false;
+  }
+
+  $('recBtn').onclick = () => recState === 'idle' ? startRec() : stopRec();
+  $('recPause').onclick = pauseRec;
+  $('recName').oninput = () => { if (recMeta) { recMeta.name = $('recName').value; IDB.setMeta(recMeta).catch(() => {}); } };
+  $('recDownload').onclick = () => {
+    if (!recBlob) return;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(recBlob);
+    a.download = ($('recName').value.trim() || 'recording') + recExt(); a.click();
+  };
+  $('recDelete').onclick = async () => {
+    if (!confirm('حذف التسجيل نهائياً من هذا المتصفح؟')) return;
+    await IDB.clear(); recBlob = null; recMeta = null; $('recResult').hidden = true; $('recPlayer').removeAttribute('src');
+    $('recTime').textContent = '00:00:00'; $('recState').textContent = 'اضغط الزر الأحمر لبدء التسجيل، واضغطه مرة أخرى لإنهائه.';
+  };
+  $('recTranscribe').onclick = () => {
+    if (!recBlob) return;
+    const file = new File([recBlob], ($('recName').value.trim() || 'recording') + recExt(), { type: recBlob.type });
+    showTab('transcribe'); run(file);
+  };
+
+  // Recover a recording that was interrupted (tab closed, browser crash, power loss)
+  (async () => {
+    try {
+      const meta = await IDB.getMeta(); if (!meta) return;
+      if (meta.done) { await showRecResult(); return; }
+      const chunks = await IDB.allChunks();
+      if (!chunks.length) { await IDB.clear(); return; }
+      const box = $('recRecover'); box.hidden = false;
+      box.innerHTML = `⚠️ يوجد تسجيل لم يكتمل (بدأ ${esc(new Date(meta.startedAt).toLocaleString('ar'))}، حوالي ${fmt(meta.elapsed / 1000)}). ` +
+        `<button type="button" class="linkbtn" id="recRecoverYes">استعادته</button> · <button type="button" class="linkbtn" id="recRecoverNo">حذفه</button>`;
+      badge('record');
+      $('recRecoverYes').onclick = async () => { meta.done = true; await IDB.setMeta(meta); box.hidden = true; await showRecResult(); };
+      $('recRecoverNo').onclick = async () => { if (!confirm('حذف التسجيل غير المكتمل نهائياً؟')) return; await IDB.clear(); box.hidden = true; };
+    } catch {}
+  })();
+  listMics();
+
+  // ===================== Help =====================
+  function openHelp(key) {
+    showTab('help');
+    const d = $('help-' + key); if (!d) return;
+    d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    d.classList.remove('flash'); void d.offsetWidth; d.classList.add('flash');
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-help]'); if (!t) return;
+    e.preventDefault(); e.stopPropagation(); openHelp(t.dataset.help);
+  }, true);
+
+  // Prompt preview: shows exactly what is sent after variables are replaced
+  function renderPreview() {
+    if ($('promptPreviewBox').hidden) return;
+    const l = $('previewLang').value, pr = profile(PR.editing).prompts;
+    const key = (curPrompt === 'tplAr' || curPrompt === 'tplEn') ? 'mom' : curPrompt;
+    if (curPrompt === 'tplAr' || curPrompt === 'tplEn') $('previewLang').value = l;
+    $('previewNote').textContent = key !== curPrompt
+      ? 'القالب لا يُرسل وحده — يُعرض هنا داخل «تعليمات المحضر» كما يصل إلى النموذج.'
+      : (key === 'mom' ? 'هذه رسالة النظام (system). يُرسل بعدها بيانات الاجتماع ونص التفريغ.' : '');
+    $('previewText').textContent = fill(pr[key], l, pr);
+  }
+  $('promptPreview').onclick = () => {
+    const box = $('promptPreviewBox'); box.hidden = !box.hidden;
+    $('promptPreview').textContent = box.hidden ? '👁 معاينة ما يُرسل' : '✕ إخفاء المعاينة';
+    if (curPrompt === 'tplEn') $('previewLang').value = 'en'; else if (curPrompt === 'tplAr') $('previewLang').value = 'ar';
+    renderPreview();
+  };
+  $('previewLang').onchange = renderPreview;
+  $('promptEditor').addEventListener('input', renderPreview);
+  document.querySelectorAll('#promptChips button').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.p === 'tplEn') $('previewLang').value = 'en'; else if (b.dataset.p === 'tplAr') $('previewLang').value = 'ar';
+    renderPreview();
+  }));
+  $('profileSel').addEventListener('change', renderPreview);
+
+  // ===================== Init =====================
+  $('mDate').valueAsDate = new Date();
+  loadSaved();
+  renderProfileSelects();
+  renderPromptEditor();
+  updateReady();
+  // first visit → open the guide; afterwards → reopen the last tab used
+  try { const t = localStorage.getItem('mom-tab'); if (t && $('tab-' + t)) showTab(t); else if (!t) showTab('help'); } catch {}
+})();
+</script>
+</body>
+</html>
